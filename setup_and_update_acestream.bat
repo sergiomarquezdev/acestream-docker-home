@@ -14,10 +14,10 @@ REM Eliminar el contenedor existente si ya existe
 docker ps -aq --filter "name=acestream-container" | docker rm -f acestream-container > nul 2>&1
 
 REM Construir la imagen Docker
-docker build --no-cache -t docker-acestream-linux .
+docker build --no-cache -t docker-acestream-ubuntu .
 
 REM Ejecutar el contenedor Docker
-docker run -d -p 6878:6878 --name acestream-container docker-acestream-linux
+docker run -d -p 6878:6878 --name acestream-container docker-acestream-ubuntu
 
 echo Contenedor ejecutándose en http://localhost:6878/webui/player/
 start http://localhost:6878/webui/player/

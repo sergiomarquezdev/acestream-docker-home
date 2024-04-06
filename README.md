@@ -16,7 +16,7 @@ docker --version
 Hemos facilitado un proceso de instalación y ejecución más directo mediante un script de Windows `.bat` denominado `setup_and_update_acestream.bat`. Este script automatiza la creación y ejecución de la imagen y el contenedor Docker para el proyecto Acestream, siguiendo estos pasos:
 
 1. **Elimina cualquier contenedor existente** llamado `acestream-container`. Esto asegura que no haya conflictos o errores debido a contenedores duplicados.
-2. **Construye la imagen Docker** utilizando el Dockerfile proporcionado, con la etiqueta `docker-acestream-linux`. Se construye sin caché para asegurar que se utilicen las versiones más recientes de todas las dependencias.
+2. **Construye la imagen Docker** utilizando el Dockerfile proporcionado, con la etiqueta `docker-acestream-ubuntu`. Se construye sin caché para asegurar que se utilicen las versiones más recientes de todas las dependencias.
 3. **Ejecuta un nuevo contenedor Docker** basado en la imagen construida, exponiendo el puerto 6878 y asignándole el nombre `acestream-container`. Esto pone en marcha el servicio Acestream dentro del contenedor.
 
 ### Cómo Usar el Script `setup_and_update_acestream.bat`
@@ -43,7 +43,7 @@ Utilizaremos la imagen **ubuntu:bionic** y la versión de Acestream **acestream_
 Para construir la imagen Docker a partir de este Dockerfile, ejecuta el siguiente comando en la terminal desde el directorio donde se encuentra el Dockerfile:
 
 ```bash
-docker build --no-cache -t docker-acestream-linux .
+docker build --no-cache -t docker-acestream-ubuntu .
 ```
 
 Al construir la imagen Docker, tienes la opción de especificar la versión de Acestream y su hash SHA256 correspondiente mediante los argumentos de construcción ACESTREAM_VERSION y ACESTREAM_SHA256. Estos valores por defecto en el Dockerfile son:
@@ -52,20 +52,20 @@ Al construir la imagen Docker, tienes la opción de especificar la versión de A
 
 Para especificar una versión diferente y su correspondiente hash SHA256, utiliza el siguiente comando:
 ```bash
-docker build --no-cache --build-arg ACESTREAM_VERSION=3.1.74_ubuntu_18.04_x86_64 --build-arg ACESTREAM_SHA256=87db34c1aedc55649a8f8f5f4b6794581510701fc7ffbd47aaec0e9a2de2b219 -t docker-acestream-linux .
+docker build --no-cache --build-arg ACESTREAM_VERSION=3.1.74_ubuntu_18.04_x86_64 --build-arg ACESTREAM_SHA256=87db34c1aedc55649a8f8f5f4b6794581510701fc7ffbd47aaec0e9a2de2b219 -t docker-acestream-ubuntu .
 ```
 
-Estos comandos construyen una nueva imagen Docker llamada docker-acestream-linux utilizando el Dockerfile en tu directorio actual.
+Estos comandos construyen una nueva imagen Docker llamada docker-acestream-ubuntu utilizando el Dockerfile en tu directorio actual.
 
 ## Ejecución del Contenedor
 
 Una vez construida la imagen, puedes ejecutar Acestream en un contenedor Docker usando:
 
 ```bash
-docker run --name acestream -d -p 6878:6878 -p 8621:8621 docker-acestream-linux
+docker run --name acestream -d -p 6878:6878 -p 8621:8621 docker-acestream-ubuntu
 ```
 
-Este comando inicia un contenedor basado en la imagen docker-acestream-linux, expone el puerto 6878 para acceder a Acestream, y lo ejecuta en modo desacoplado.
+Este comando inicia un contenedor basado en la imagen docker-acestream-ubuntu, expone el puerto 6878 para acceder a Acestream, y lo ejecuta en modo desacoplado.
 
 ## Acceso a Interfaz Web
 Una vez que el contenedor esté en ejecución y no haya errores en los logs, puedes acceder a la interfaz web de Acestream utilizando un navegador web y yendo a http://localhost:6878/webui/player/.
