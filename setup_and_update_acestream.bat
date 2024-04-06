@@ -1,7 +1,7 @@
 @echo off
 
 REM Eliminar el contenedor existente si ya existe
-docker ps -aq --filter "name=acestream-container" | ForEach-Object {docker rm -f $_}
+docker ps -aq --filter "name=acestream-container" | docker rm -f acestream-container > nul 2>&1
 
 REM Construir la imagen Docker
 docker build --no-cache -t docker-acestream-linux .
