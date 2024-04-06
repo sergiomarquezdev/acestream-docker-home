@@ -60,32 +60,25 @@ Para detener el contenedor, puedes usar Docker Desktop o ejecutar el siguiente c
 docker stop acestream-container
 ```
 
-## Configuración del Protocolo Acestream en Windows (OPCIONAL)
+## Configuración Automática del Protocolo Acestream en Windows (OPCIONAL)
 
-También puedes añadir por defecto que todos los enlances `acestream://` ejecuten automáticamente el archivo. 
-Para asegurar que los enlaces `acestream://` ejecuten correctamente el script `start_acestream.bat` en Windows, es necesario registrar el protocolo en el Registro de Windows y apuntarlo al script. A continuación, se muestra cómo configurar el registro correctamente:
+Para facilitar la configuración del protocolo `acestream://` y asegurar que los enlaces se ejecuten automáticamente con `start_acestream.bat`, hemos creado un script llamado `register_acestream_protocol.bat`. Este script automatiza el proceso de registro del protocolo en el Registro de Windows y lo asocia con el script necesario. Sigue estos pasos para usarlo:
 
-1. **Abre el Editor del Registro**:
-   - Presiona `Win + R`, escribe `regedit` y presiona `Enter`.
+1. **Descarga `register_acestream_protocol.bat`**:
+   - Asegúrate de que `register_acestream_protocol.bat` y `start_acestream.bat` estén en el mismo directorio.
 
-2. **Navega a la clave del registro** `HKEY_CLASSES_ROOT\acestream` y asegúrate de que existan los siguientes valores:
-   - **Clave**: `HKEY_CLASSES_ROOT\acestream`
-     - **Valor**: (Predeterminado) = `URL:acestream Protocol`
-     - **Valor**: `URL Protocol` = `""`
+2. **Ejecuta `register_acestream_protocol.bat` como Administrador**:
+   - Haz clic derecho sobre `register_acestream_protocol.bat` y selecciona "Ejecutar como administrador".
+   - El script verificará la presencia de `start_acestream.bat` en el mismo directorio, registrará el protocolo `acestream://` y lo asociará con `start_acestream.bat`.
 
-3. **En la misma clave**, asegúrate de que el comando para abrir los enlaces esté configurado correctamente:
-   - **Clave**: `HKEY_CLASSES_ROOT\acestream\shell\open\command`
-     - **Valor**: (Predeterminado) = `"C:\ruta\a\tu\start_acestream.bat" "%1"`
+3. **Verificación**:
+   - Una vez ejecutado, el script mostrará un mensaje confirmando que el protocolo `acestream` ha sido configurado correctamente para ejecutar con `start_acestream.bat`.
 
-   Reemplaza `"C:\ruta\a\tu\start_acestream.bat"` con la ruta completa a tu script `start_acestream.bat`. Es importante incluir las comillas `" "` y el `%1` al final, ya que esto asegura que la URL se pase como argumento al script.
+> **Nota**: Modificar el registro de Windows puede afectar el funcionamiento de tu sistema. Este script ha sido diseñado para hacer cambios específicos relacionados con el protocolo `acestream`. Se recomienda realizar estos cambios con precaución y solo si comprendes las acciones que realiza el script.
 
-Por favor, ten en cuenta que modificar el registro de Windows puede afectar el funcionamiento de tu sistema. Es recomendable realizar estos cambios con precaución y solo si estás seguro de lo que estás haciendo.
+Si encuentras algún problema durante la ejecución del script, asegúrate de que estás ejecutándolo con privilegios de administrador y que ambos archivos, `register_acestream_protocol.bat` y `start_acestream.bat`, están en el mismo directorio.
 
-Si estás en Windows 10 o versiones más recientes, es posible que necesites habilitar la ejecución de scripts. Esto se puede hacer ajustando la política de ejecución en PowerShell como administrador:
-```powershell
-Set-ExecutionPolicy RemoteSigned
-```
-Sin embargo, ten en cuenta que cambiar la política de ejecución puede tener implicaciones de seguridad, así que asegúrate de entender lo que esto implica.
+Este enfoque elimina la necesidad de realizar cambios manuales en el Registro de Windows, simplificando la configuración para los usuarios.
 
 
 ## Construcción de la Imagen
