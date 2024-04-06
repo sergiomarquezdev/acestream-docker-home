@@ -119,6 +119,33 @@ docker inspect --format='{{json .State.Health}}' acestream
 También se puede ver el estado de salud desde la propia interfaz web desplegada mediante el enlace:
 `http://localhost:6878/webui/api/service?method=get_version`
 
+## Configuración del Protocolo Acestream en Windows
+
+También puedes añadir por defecto que todos los enlances `acestream://` ejecuten automáticamente el archivo. 
+Para asegurar que los enlaces `acestream://` ejecuten correctamente el script `start_acestream.bat` en Windows, es necesario registrar el protocolo en el Registro de Windows y apuntarlo al script. A continuación, se muestra cómo configurar el registro correctamente:
+
+1. **Abre el Editor del Registro**:
+   - Presiona `Win + R`, escribe `regedit` y presiona `Enter`.
+
+2. **Navega a la clave del registro** `HKEY_CLASSES_ROOT\acestream` y asegúrate de que existan los siguientes valores:
+   - **Clave**: `HKEY_CLASSES_ROOT\acestream`
+     - **Valor**: (Predeterminado) = `URL:acestream Protocol`
+     - **Valor**: `URL Protocol` = `""`
+
+3. **En la misma clave**, asegúrate de que el comando para abrir los enlaces esté configurado correctamente:
+   - **Clave**: `HKEY_CLASSES_ROOT\acestream\shell\open\command`
+     - **Valor**: (Predeterminado) = `"C:\ruta\a\tu\start_acestream.bat" "%1"`
+
+   Reemplaza `"C:\ruta\a\tu\start_acestream.bat"` con la ruta completa a tu script `start_acestream.bat`. Es importante incluir las comillas `" "` y el `%1` al final, ya que esto asegura que la URL se pase como argumento al script.
+
+Por favor, ten en cuenta que modificar el registro de Windows puede afectar el funcionamiento de tu sistema. Es recomendable realizar estos cambios con precaución y solo si estás seguro de lo que estás haciendo.
+
+Si estás en Windows 10 o versiones más recientes, es posible que necesites habilitar la ejecución de scripts. Esto se puede hacer ajustando la política de ejecución en PowerShell como administrador:
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+Sin embargo, ten en cuenta que cambiar la política de ejecución puede tener implicaciones de seguridad, así que asegúrate de entender lo que esto implica.
+
 ## Uso de Acestream
 
 Una vez que Acestream está operativo en el contenedor, puedes interactuar con él a través del puerto `6878`. Dependiendo
