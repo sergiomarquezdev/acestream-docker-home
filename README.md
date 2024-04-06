@@ -79,7 +79,11 @@ Para facilitar la configuración del protocolo `acestream://` y asegurar que los
 Si encuentras algún problema durante la ejecución del script, asegúrate de que estás ejecutándolo con privilegios de administrador y que ambos archivos, `register_acestream_protocol.bat` y `start_acestream.bat`, están en el mismo directorio.
 
 Este enfoque elimina la necesidad de realizar cambios manuales en el Registro de Windows, simplificando la configuración para los usuarios.
-
+                                      
+Puedes revertir los cambios ejecutando este comando, que elimina la clave que hemos añadido en el Registro de Windows:
+```bash
+reg delete "HKEY_CLASSES_ROOT\acestream" /f
+```
 
 ## Construcción de la Imagen
 
