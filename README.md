@@ -6,9 +6,36 @@ Este proyecto proporciona un Dockerfile para crear una imagen Docker que ejecuta
 
 Para usar este Dockerfile, necesitarás tener Docker instalado en tu sistema. Si no tienes Docker, puedes encontrar las instrucciones de instalación en la [documentación oficial de Docker](https://docs.docker.com/get-docker/).
 
+## Instalación y Ejecución Automática con Script `setup_and_update_acestream.bat`
+
+Hemos facilitado un proceso de instalación y ejecución más directo mediante un script de Windows `.bat` denominado `setup_and_update_acestream.bat`. Este script automatiza la creación y ejecución de la imagen y el contenedor Docker para el proyecto Acestream, siguiendo estos pasos:
+
+1. **Elimina cualquier contenedor existente** llamado `acestream-container`. Esto asegura que no haya conflictos o errores debido a contenedores duplicados.
+2. **Construye la imagen Docker** utilizando el Dockerfile proporcionado, con la etiqueta `docker-acestream-linux`. Se construye sin caché para asegurar que se utilicen las versiones más recientes de todas las dependencias.
+3. **Ejecuta un nuevo contenedor Docker** basado en la imagen construida, exponiendo el puerto 6878 y asignándole el nombre `acestream-container`. Esto pone en marcha el servicio Acestream dentro del contenedor.
+
+### Cómo Usar el Script `setup_and_update_acestream.bat`
+
+Para ejecutar este script y configurar todo automáticamente, sigue estos pasos:
+
+1. Asegúrate de que estás en una ventana de Símbolo del sistema o PowerShell con derechos de administrador.
+2. Navega al directorio que contiene el script `setup_and_update_acestream.bat`.
+3. Ejecuta el script con el siguiente comando:
+```bash
+setup_and_update_acestream.bat
+```
+4. Una vez ejecutado el script, el contenedor se estará ejecutando en segundo plano. El script te informará con el mensaje: "Contenedor ejecutándose en http://127.0.0.1:6878/webui/player/", indicando que Acestream está listo para ser utilizado a través de la interfaz web. Solamente deberás añadir el enlace de Acestream al final del enlace.
+
+> Importante: Este proceso elimina el contenedor existente y crea uno nuevo cada vez que se ejecuta el script. Esto es ideal para una instalación fresca o actualizaciones mayores. Asegúrate de que Docker esté instalado en tu sistema y funcionando correctamente antes de ejecutar setup_and_update_acestream.bat.
+          
+5. Si quiere detener el proceso, puede hacerlo desde la interfaz de Docker 'Docker Desktop' o bien ejecutando el siguiente comando:
+```bash
+docker stop acestream-container
+```
+
 ## Construcción de la Imagen
 
-Utilizaremos la imagen ubuntu:bionic y la versión de Acestream acestream_3.1.74_ubuntu_18.04_x86_64.tar.gz.
+Utilizaremos la imagen **ubuntu:bionic** y la versión de Acestream **acestream_3.1.74_ubuntu_18.04_x86_64.tar.gz**.
 
 Para construir la imagen Docker a partir de este Dockerfile, ejecuta el siguiente comando en la terminal desde el directorio donde se encuentra el Dockerfile:
 
@@ -17,8 +44,8 @@ docker build --no-cache -t docker-acestream-linux .
 ```
 
 Al construir la imagen Docker, tienes la opción de especificar la versión de Acestream y su hash SHA256 correspondiente mediante los argumentos de construcción ACESTREAM_VERSION y ACESTREAM_SHA256. Estos valores por defecto en el Dockerfile son:
-ARG ACESTREAM_VERSION=3.1.74_ubuntu_18.04_x86_64
-ARG ACESTREAM_SHA256=87db34c1aedc55649a8f8f5f4b6794581510701fc7ffbd47aaec0e9a2de2b219
+- *ARG ACESTREAM_VERSION=3.1.74_ubuntu_18.04_x86_64*
+- *ARG ACESTREAM_SHA256=87db34c1aedc55649a8f8f5f4b6794581510701fc7ffbd47aaec0e9a2de2b219*
 
 Para especificar una versión diferente y su correspondiente hash SHA256, utiliza el siguiente comando:
 ```bash
