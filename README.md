@@ -1,12 +1,17 @@
-# Docker-Acestream-Linux
+# Dockerized Acestream x Ubuntu
 
-Este proyecto proporciona un Dockerfile para crear una imagen Docker que ejecuta Acestream en un contenedor, utilizando BusyBox para la descarga y configuración inicial, y Python Slim como imagen base. Está diseñado para ser ligero, eficiente y fácil de configurar.
+Este proyecto proporciona un Dockerfile para crear una imagen Docker que ejecuta Acestream en un contenedor, utilizando **ubuntu:bionic** como imagen base. Está diseñado ser eficiente y fácil de configurar.
 
 ## Requisitos Previos
 
-Para usar este Dockerfile, necesitarás tener Docker instalado en tu sistema. Si no tienes Docker, puedes encontrar las instrucciones de instalación en la [documentación oficial de Docker](https://docs.docker.com/get-docker/).
+Para usar este Dockerfile, necesitarás tener Docker instalado en tu sistema. Si no tienes Docker, puedes encontrar las instrucciones de instalación en la [documentación oficial de Docker](https://docs.docker.com/get-docker/) o en la [página oficial de Docker](https://www.docker.com/products/docker-desktop).
 
-## Instalación y Ejecución Automática con Script `setup_and_update_acestream.bat`
+Puedes verificar si Docker está instalado ejecutando el siguiente comando en la consola de comandos:
+```bash
+docker --version
+```
+
+## Instalación y Ejecución Automática con Script `setup_and_update_acestream.bat` (Windows)
 
 Hemos facilitado un proceso de instalación y ejecución más directo mediante un script de Windows `.bat` denominado `setup_and_update_acestream.bat`. Este script automatiza la creación y ejecución de la imagen y el contenedor Docker para el proyecto Acestream, siguiendo estos pasos:
 
@@ -18,17 +23,15 @@ Hemos facilitado un proceso de instalación y ejecución más directo mediante u
 
 Para ejecutar este script y configurar todo automáticamente, sigue estos pasos:
 
-1. Asegúrate de que estás en una ventana de Símbolo del sistema o PowerShell con derechos de administrador.
-2. Navega al directorio que contiene el script `setup_and_update_acestream.bat`.
-3. Ejecuta el script con el siguiente comando:
+1. Ejecuta el archivo `setup_and_update_acestream.bat`. Puede hacerlo también desde la consola de comando:
 ```bash
 setup_and_update_acestream.bat
 ```
-4. Una vez ejecutado el script, el contenedor se estará ejecutando en segundo plano. Accediendo a http://localhost:6878/webui/player/, solamente deberás añadir el id de Acestream al final del enlace.
+2. Una vez ejecutado y finalizado el script, el contenedor se estará ejecutando en segundo plano. Accediendo a http://localhost:6878/webui/player/, solamente deberás añadir el id de Acestream al final del enlace.
 
 > Importante: Este proceso elimina el contenedor existente y crea uno nuevo cada vez que se ejecuta el script. Esto es ideal para una instalación fresca o actualizaciones mayores. Asegúrate de que Docker esté instalado en tu sistema y funcionando correctamente antes de ejecutar setup_and_update_acestream.bat.
           
-5. Si quiere detener el proceso, puede hacerlo desde la interfaz de Docker 'Docker Desktop' o bien ejecutando el siguiente comando:
+Si quiere detener el contenedor, puede hacerlo desde la interfaz de Docker 'Docker Desktop' o bien ejecutando el siguiente comando en la consola:
 ```bash
 docker stop acestream-container
 ```
@@ -86,4 +89,4 @@ Con Acestream ejecutándose en el contenedor, puedes acceder a él a través del
 Las contribuciones a este proyecto son bienvenidas. Si deseas contribuir, por favor, haz un fork del repositorio, realiza tus cambios y envía un pull request.
 
 ## Licencia
-Este proyecto está licenciado bajo la MIT License - ve el archivo [LICENSE](LICENSE.md) para más detalles.
+Este proyecto está licenciado bajo la MIT License - ve el archivo [LICENSE](LICENSE) para más detalles.
