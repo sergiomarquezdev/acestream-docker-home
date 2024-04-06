@@ -35,8 +35,8 @@ if %errorlevel% neq 0 (
 )
 docker run -d -p %PORT%:%PORT% --name %CONTAINER_NAME% %IMAGE_NAME%
 
-REM Espera 5 segundos antes de abrir el navegador
-timeout /t 5 /nobreak > nul
+REM Espera 3 segundos antes de abrir el navegador
+timeout /t 3 /nobreak > nul
 
 REM Comprueba el STREAM_ID y abre el navegador en la URL específica
 if not "%STREAM_ID%"=="" (
