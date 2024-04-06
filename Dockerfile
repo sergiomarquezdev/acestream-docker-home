@@ -38,7 +38,8 @@ RUN mkdir -p /opt/acestream && \
     /opt/acestream/start-engine --version
 
 # Sobrescribir el reproductor web de Ace Stream disfuncional con un reproductor de videojs funcional,
-# Acceso en 'http://127.0.0.1:6878/webui/player/<ID de Acestream>' / 'http://127.0.0.1:6878/webui/player/acestream://<ID de Acestream>'
+# Acceso en 'http://127.0.0.1:6878/webui/player/<ID de Acestream>'.
+# Se obtiene del enlace 'acestream://xxxxxxxxxx', donde <ID de Acestream> sería 'xxxxxxxxxx'.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
 
 # Preparar directorio

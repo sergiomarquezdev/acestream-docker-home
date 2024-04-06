@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Ace Link</title>
-	<link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/drive-viewer/AKGpihZoBOT8YvVO8u53lht7oeVVmko0q4EqDT5mVGHpurxXNl9vIrM96zStqLVdIaXWm8n6PSrkRwIAzHnUJKhrkDdwMSNMHX0IYkU=w1314-h1045">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.17.1/video-js.min.css" integrity="sha512-d4c0djrxPfHtfWvKxxUpyL7jQxHfXf8ijfTcmbK9NZUYpl/Bclwj5SlWDpjxJfq1ah1JAqyFj8T00DmxiX+LJw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.17.1/video.min.js" integrity="sha512-1uwt7WCM9SM+AUswuXkIqIPZ4XMhKja83bo3GPjR/FyuXvsy87tp+/see3X8+dSDJZCKxbhGD8UoKvoCF37a5A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="icon" type="image/x-icon"
+          href="https://lh3.googleusercontent.com/drive-viewer/AKGpihZoBOT8YvVO8u53lht7oeVVmko0q4EqDT5mVGHpurxXNl9vIrM96zStqLVdIaXWm8n6PSrkRwIAzHnUJKhrkDdwMSNMHX0IYkU=w1314-h1045">
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <style>
         body, html, video, .video-js {
             margin: 0;
@@ -23,22 +24,30 @@
     </style>
 </head>
 <body>
-<video class="video-js vjs-default-skin" controls width="100%" height="100%"></video>
+<video
+        id="video"
+        class="video-js vjs-default-skin"
+        controls
+        preload="auto"
+        data-setup="{}"
+        width="100%"
+        height="100%">
+    <p class="vjs-no-js">
+        To view this video please enable JavaScript, and consider upgrading to a web browser that
+        <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+</video>
 <script>
     // Obtener el playerId de la variable externa
     let playerId = "{player_id}";
-    
-    // Verificar si el playerId comienza con 'acestream://'
-    if (playerId.startsWith('acestream://')) {
-        // Eliminar 'acestream://' del playerId
-        playerId = playerId.replace('acestream://', '');
-    }
 
     document.title = `${document.title} [${playerId.substr(0, 7)}]`;
-    const player = videojs(document.querySelector('video'));
-    player.src(`http://127.0.0.1:6878/ace/manifest.m3u8?id=${playerId}`);
+    const player = videojs('video');
+    player.src({
+        src: `http://127.0.0.1:6878/ace/manifest.m3u8?id=${playerId}`,
+        type: 'application/x-mpegURL' // Ajuste para el tipo MIME correcto para streams HLS.
+    });
     player.play();
-
 </script>
 </body>
 </html>
