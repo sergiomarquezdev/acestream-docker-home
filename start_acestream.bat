@@ -4,9 +4,16 @@ set IMAGE_NAME=smarquezp/docker-acestream-ubuntu:latest
 set CONTAINER_NAME=acestream-container
 set PORT=6878
 
-REM Quita acestream:// del argumento pasado y lo setea en la variable
-set STREAM_ID=%~1
-set STREAM_ID=%STREAM_ID:acestream://=%
+REM Verifica y procesa el argumento pasado
+if "%~1"=="" (
+    echo Ejecutado sin argumento.
+    set "STREAM_ID="
+) else (
+    set "STREAM_ID=%~1"
+    REM Quita acestream:// del argumento pasado si está presente y lo setea en la variable
+    set "STREAM_ID=%STREAM_ID:acestream://=%"
+)
+echo Abriendo stream ID: %STREAM_ID%
 
 REM Verifica que Docker esté instalado
 docker --version >nul 2>&1
@@ -15,14 +22,17 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-REM Detiene y elimina el contenedor existente, si lo hay
-docker stop %CONTAINER_NAME% >nul 2>&1
-docker rm %CONTAINER_NAME% >nul 2>&1
-
 REM Descarga la última imagen desde el repositorio de Docker
 docker pull %IMAGE_NAME%
 
-REM Ejecuta el contenedor de Docker
+REM Verifica si el contenedor ya existe
+docker ps -a --filter "name=%CONTAINER_NAME%" --format "{{.Names}}" | findstr /c:"%CONTAINER_NAME%" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Creando y ejecutando un nuevo contenedor...
+) else (
+    echo Contenedor existente detectado. Deteniendo y eliminando...
+    docker rm -f %CONTAINER_NAME% >nul 2>&1
+)
 docker run -d -p %PORT%:%PORT% --name %CONTAINER_NAME% %IMAGE_NAME%
 
 REM Espera 5 segundos antes de abrir el navegador
