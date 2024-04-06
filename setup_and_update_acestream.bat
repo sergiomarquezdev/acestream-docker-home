@@ -9,4 +9,5 @@ docker build --no-cache -t docker-acestream-linux .
 REM Ejecutar el contenedor Docker
 docker run -d -p 6878:6878 --name acestream-container docker-acestream-linux
 
-echo "Contenedor ejecutándose en http://127.0.0.1:6878/webui/player/"
+echo "Contenedor ejecutándose en http://localhost:6878/webui/player/"
+start http://localhost:6878/webui/player/

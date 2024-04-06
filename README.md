@@ -24,7 +24,7 @@ Para ejecutar este script y configurar todo automáticamente, sigue estos pasos:
 ```bash
 setup_and_update_acestream.bat
 ```
-4. Una vez ejecutado el script, el contenedor se estará ejecutando en segundo plano. El script te informará con el mensaje: "Contenedor ejecutándose en http://127.0.0.1:6878/webui/player/", indicando que Acestream está listo para ser utilizado a través de la interfaz web. Solamente deberás añadir el enlace de Acestream al final del enlace.
+4. Una vez ejecutado el script, el contenedor se estará ejecutando en segundo plano. Accediendo a http://localhost:6878/webui/player/, solamente deberás añadir el id de Acestream al final del enlace.
 
 > Importante: Este proceso elimina el contenedor existente y crea uno nuevo cada vez que se ejecuta el script. Esto es ideal para una instalación fresca o actualizaciones mayores. Asegúrate de que Docker esté instalado en tu sistema y funcionando correctamente antes de ejecutar setup_and_update_acestream.bat.
           
@@ -65,7 +65,7 @@ docker run --name acestream -d -p 6878:6878 -p 8621:8621 docker-acestream-linux
 Este comando inicia un contenedor basado en la imagen docker-acestream-linux, expone el puerto 6878 para acceder a Acestream, y lo ejecuta en modo desacoplado.
 
 ## Acceso a Interfaz Web
-Una vez que el contenedor esté en ejecución y no haya errores en los logs, puedes acceder a la interfaz web de Acestream utilizando un navegador web y yendo a http://localhost:6878/webui.
+Una vez que el contenedor esté en ejecución y no haya errores en los logs, puedes acceder a la interfaz web de Acestream utilizando un navegador web y yendo a http://localhost:6878/webui/player/.
 
 Para probar el reproductor personalizado, reemplaza <acestream_id> en la URL http://localhost:6878/webui/player/<acestream_id> con un ID de transmisión válido de Acestream.
 
@@ -76,7 +76,7 @@ docker inspect --format='{{json .State.Health}}' acestream
 ```
 
 También se puede ver este desde la propia interfaz web desplegada mediante el enlace:
-http://127.0.0.1:6878/webui/api/service?method=get_version
+http://localhost:6878/webui/api/service?method=get_version
 
 ## Uso de Acestream
 
