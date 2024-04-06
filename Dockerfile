@@ -23,7 +23,7 @@ RUN set -ex && \
         python-lxml \
         wget \
         python-pip \
-        build-essential && \ 
+        build-essential && \
     pip install -r /requirements.txt && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/* /requirements.txt 
