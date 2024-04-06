@@ -3,7 +3,10 @@
 set IMAGE_NAME=smarquezp/docker-acestream-ubuntu:latest
 set CONTAINER_NAME=acestream-container
 set PORT=6878
-set STREAM_ID=%1
+
+REM Quita acestream:// del argumento pasado y lo setea en la variable
+set STREAM_ID=%~1
+set STREAM_ID=%STREAM_ID:acestream://=%
 
 REM Verifica que Docker esté instalado
 docker --version >nul 2>&1
