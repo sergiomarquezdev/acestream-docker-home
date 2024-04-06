@@ -11,25 +11,25 @@ Puedes verificar si Docker está instalado ejecutando el siguiente comando en la
 docker --version
 ```
 
-## Instalación y Ejecución Automática con Script `setup_and_update_acestream.bat` (Windows)
+## Instalación y Ejecución Automática con Script `start_acestream.bat` (Windows)
 
-Hemos facilitado un proceso de instalación y ejecución más directo mediante un script de Windows `.bat` denominado `setup_and_update_acestream.bat`. Este script automatiza la creación y ejecución de la imagen y el contenedor Docker para el proyecto Acestream, siguiendo estos pasos:
+Hemos facilitado un proceso de instalación y ejecución más directo mediante un script de Windows `.bat` denominado `start_acestream.bat`. Este script automatiza la creación y ejecución de la imagen y el contenedor Docker para el proyecto Acestream, siguiendo estos pasos:
 
 1. **Elimina cualquier contenedor existente** llamado `acestream-container`. Esto asegura que no haya conflictos o errores debido a contenedores duplicados.
 2. **Construye la imagen Docker** utilizando el Dockerfile proporcionado, con la etiqueta `docker-acestream-ubuntu`. Se construye sin caché para asegurar que se utilicen las versiones más recientes de todas las dependencias.
 3. **Ejecuta un nuevo contenedor Docker** basado en la imagen construida, exponiendo el puerto 6878 y asignándole el nombre `acestream-container`. Esto pone en marcha el servicio Acestream dentro del contenedor.
 
-### Cómo Usar el Script `setup_and_update_acestream.bat`
+### Cómo Usar el Script `start_acestream.bat`
 
 Para ejecutar este script y configurar todo automáticamente, sigue estos pasos:
 
-1. Ejecuta el archivo `setup_and_update_acestream.bat`. Puede hacerlo también desde la consola de comando:
+1. Ejecuta el archivo `start_acestream.bat`. Puede hacerlo también desde la consola de comando:
 ```bash
-setup_and_update_acestream.bat
+start_acestream.bat
 ```
 2. Una vez ejecutado y finalizado el script, el contenedor se estará ejecutando en segundo plano. Accediendo a http://localhost:6878/webui/player/, solamente deberás añadir el id de Acestream al final del enlace.
 
-> Importante: Este proceso elimina el contenedor existente y crea uno nuevo cada vez que se ejecuta el script. Esto es ideal para una instalación fresca o actualizaciones mayores. Asegúrate de que Docker esté instalado en tu sistema y funcionando correctamente antes de ejecutar setup_and_update_acestream.bat.
+> Importante: Este proceso elimina el contenedor existente y crea uno nuevo cada vez que se ejecuta el script. Esto es ideal para una instalación fresca o actualizaciones mayores. Asegúrate de que Docker esté instalado en tu sistema y funcionando correctamente antes de ejecutar start_acestream.bat.
           
 Si quiere detener el contenedor, puede hacerlo desde la interfaz de Docker 'Docker Desktop' o bien ejecutando el siguiente comando en la consola:
 ```bash
