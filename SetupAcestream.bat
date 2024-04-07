@@ -64,23 +64,24 @@ echo 2. Configurar el protocolo acestream en Windows (OPCIONAL)
 echo    Crea los registros necesarios en el Registro de Windows para que todos los enlaces 'acestream://xxx' se abran directamente con este script.
 echo 3. Instalar y ejecutar Acestream en Docker
 echo    Proceso de instalacion de Acestream en Docker (recuerda tener instalada y ejecutada la aplicacion Docker)
-echo 4. Ejecutar URL Acestream
-echo    Si solamente quieres ejecutar un enlace Acestream (Si ya tienes corriendo el contenedor, si no, ejecuta el paso 3)
-echo 5. Salir
+echo 4. Ejecutar navegador con URL para Acestream
+echo    Si solamente quieres ejecutar el navegador con el enlace
+echo    (Si ya tienes corriendo el contenedor, si no, ejecuta el paso 3)
+echo 0. Salir
 echo.
-echo Introduce la opcion deseada y presiona ENTER. Para salir, introduce '5'.
+echo Introduce la opcion deseada y presiona ENTER. Para salir, introduce '0'.
 :: Solicita al usuario que introduzca el numero de la opcion que desea realizar.
 set /p OPTION="Opcion: "
 
 :: Evalua la opcion introducida y redirige al bloque de codigo correspondiente.
+if "%OPTION%"=="0" goto end
 if "%OPTION%"=="1" goto installDocker
 if "%OPTION%"=="2" goto configProtocol
 if "%OPTION%"=="3" goto installAcestream
 if "%OPTION%"=="4" (
     set "STREAM_ID="
-    goto setAcestreamUrl
+    goto startAcestream
 )
-if "%OPTION%"=="5" goto end
 :: Si se introduce una opcion no valida, informa al usuario y regresa al menu.
 echo Opcion no valida. Por favor, intenta de nuevo.
 pause
@@ -163,7 +164,12 @@ echo Docker esta listo y funcionando.
 
 echo.
 echo Descargando la imagen mas reciente para Acestream desde Docker Hub...
-docker pull %IMAGE_NAME%
+docker pull %IMAGE_NAME% >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: No se podido descargar la imagen. Inténtalo de nuevo.
+    pause
+    goto menu
+)
 
 echo.
 echo Comprobando si ya existe un contenedor con el nombre "%CONTAINER_NAME%"...
@@ -178,44 +184,27 @@ if %errorlevel% neq 0 (
 
 echo.
 echo Iniciando el contenedor de Acestream con Docker...
-docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% %IMAGE_NAME%
-
-echo.
-echo El contenedor de Acestream ha sido iniciado con exito y esta escuchando en el puerto %PORT%.
-echo.
-set "STREAM_ID="
-goto setAcestreamUrl
-
-
-:setAcestreamUrl
-:: Solicita al usuario el ID del stream de Acestream si no se ha proporcionado como parametro.
-if "%STREAM_ID%"=="" (
-    echo Por favor, introduce el ID del enlace de Acestream que deseas abrir:
-    set /p STREAM_ID="ID del enlace Acestream: "
-    echo.
-)
-
-echo El navegador se abrira en 5 segundos para reproducir el contenido.
-timeout /t 5 /nobreak >nul
-
-:: Verifica si el enlace proporcionado contiene el prefijo 'acestream://' y lo elimina para obtener solo el ID del stream.
-if "%STREAM_ID:~0,12%"=="%PREFIX%" (
-    set "STREAM_ID=%STREAM_ID:~12%"
-)
-:: Verifica si el ID del stream tiene la longitud correcta de 40 caracteres.
-if "%STREAM_ID:~39,1%" NEQ "" if "%STREAM_ID:~40,1%"=="" (
-    goto startAcestream
-) else (
-    echo El ID de stream especificado no es correcto. Intentelo de nuevo.
+docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% %IMAGE_NAME% >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: No se ha podido iniciar el contenedor. Inténtalo de nuevo.
     pause
     goto menu
 )
 
+echo.
+echo El contenedor de Acestream ha sido iniciado con exito y esta escuchando en el puerto %PORT%.
+echo.
+goto startAcestream
+
 :startAcestream
+echo.
+echo El navegador se abrira en 5 segundos para reproducir el contenido.
+timeout /t 5 /nobreak >nul
+
 :: Valida que se ha introducido un ID de stream y procede a abrirlo.
-echo Preparando para abrir el stream con ID: %STREAM_ID%...
+echo Preparando para abrir el stream Acestream...
 if not "%STREAM_ID%"=="" (
-    echo Iniciando el stream Acestream...
+    echo Iniciando el stream Acestream con ID: %STREAM_ID%...
     start http://%INTERNAL_IP%:%PORT%/webui/player/%STREAM_ID%
 ) else (
     echo No se ha proporcionado un ID de stream.
