@@ -22,68 +22,34 @@ Para asegurarte de que Docker esté instalado correctamente y listo para usar, e
 docker --version
 ```
 
+## Instalación y Ejecución Automática con Script `SetupAcestream.bat` (Windows)
 
-## Instalación y Ejecución Automática con Script `start_acestream.bat` (Windows)
+Hemos proporcionado un script `.bat` denominado `SetupAcestream.bat` para simplificar todo el proceso de instalación,
+configuración y ejecución de Acestream en contenedores Docker para usuarios de Windows. El script automatiza varios
+pasos, incluyendo:
 
-Hemos proporcionado un script `.bat` para simplificar la instalación y ejecución de Acestream en contenedores Docker
-para usuarios de Windows. El script `start_acestream.bat` automatiza varios pasos:
+1. Verificación e instalación de Docker si es necesario.
+2. Configuración automática del protocolo `acestream://` en Windows.
+3. Eliminación de cualquier contenedor Docker existente llamado `acestream-container` para evitar conflictos.
+4. Descarga de la última imagen de Docker de `smarquezp/docker-acestream-ubuntu` desde Docker Hub.
+5. Ejecución del contenedor, exponiendo el puerto 6878, lo cual permite el acceso al servicio Acestream.
 
-1. **Elimina cualquier contenedor Docker existente** llamado `acestream-container` para prevenir conflictos.
-2. **Descarga la última imagen de Docker** de `smarquezp/docker-acestream-ubuntu` desde Docker Hub.
-3. **Ejecuta el contenedor**, exponiendo el puerto 6878, lo cual permite el acceso al servicio Acestream.
+### Cómo Usar el Script `SetupAcestream.bat`
 
-### Cómo Usar el Script `start_acestream.bat`
+Para utilizar este script, simplemente descarga el
+archivo [SetupAcestream.bat](https://github.com/marquezpsergio/acestream-docker/releases) y ejecútalo:
 
-Para ejecutar este script:
+El script te guiará a través de las diferentes opciones, permitiéndote instalar Docker si es necesario, configurar el
+protocolo acestream y lanzar Acestream dentro de un contenedor Docker.
 
-- Puedes ejecutarlo directamente descargando el script y ejecutándolo con doble click, o bien seguir los siguientes
-  pasos para indicar un ID de stream Acestream:
+Recuerda que debes ejecutar el archivo en modo Administrador para configurar los registros para el protocolo Acestream,
+esto es, asociar todos los enlaces 'acestream://' a este script.
+De esta manera, cada vez que ejecutes un enlace 'acestream://xxxx' en el navegador, se ejecutará automáticamente el
+proceso.
 
-1. Abre una consola de comandos (Command Prompt) o PowerShell con derechos de administrador.
-2. Navega al directorio donde descargaste `start_acestream.bat`.
-3. Ejecuta el script mediante el siguiente comando:
-    ```bash
-    start_acestream.bat <acestream_id>
-    ```
-   Sustituye `<acestream_id>` con el ID real de tu stream Acestream.
+> **Nota:** Este proceso asegura que estés utilizando siempre la versión más reciente de la imagen de Docker de
+> Acestream y te permite gestionar el contenedor de manera eficiente.
 
-El contenedor ahora debería estar corriendo en segundo plano. Accede a `http://localhost:6878/webui/player/` y añade el
-ID de tu stream Acestream al final de la URL, como en el siguiente
-ejemplo:`http://localhost:6878/webui/player/1234567890abcdef`
-
-
-> **Nota:** Este proceso reinicia el contenedor cada vez que se ejecuta el script, lo que asegura que estás corriendo la
-> versión más reciente. Asegúrate de que Docker está instalado y operativo antes de ejecutar `start_acestream.bat`.
-
-Para detener el contenedor, puedes usar Docker Desktop o ejecutar el siguiente comando en tu consola:
-```bash
-docker stop acestream-container
-```
-
-## Configuración Automática del Protocolo Acestream en Windows (OPCIONAL)
-
-Para facilitar la configuración del protocolo `acestream://` y asegurar que los enlaces se ejecuten automáticamente con `start_acestream.bat`, hemos creado un script llamado `register_acestream_protocol.bat`. Este script automatiza el proceso de registro del protocolo en el Registro de Windows y lo asocia con el script necesario. Sigue estos pasos para usarlo:
-
-1. **Descarga `register_acestream_protocol.bat`**:
-   - Asegúrate de que `register_acestream_protocol.bat` y `start_acestream.bat` estén en el mismo directorio.
-
-2. **Ejecuta `register_acestream_protocol.bat` como Administrador**:
-   - Haz clic derecho sobre `register_acestream_protocol.bat` y selecciona "Ejecutar como administrador".
-   - El script verificará la presencia de `start_acestream.bat` en el mismo directorio, registrará el protocolo `acestream://` y lo asociará con `start_acestream.bat`.
-
-3. **Verificación**:
-   - Una vez ejecutado, el script mostrará un mensaje confirmando que el protocolo `acestream` ha sido configurado correctamente para ejecutar con `start_acestream.bat`.
-
-> **Nota**: Modificar el registro de Windows puede afectar el funcionamiento de tu sistema. Este script ha sido diseñado para hacer cambios específicos relacionados con el protocolo `acestream`. Se recomienda realizar estos cambios con precaución y solo si comprendes las acciones que realiza el script.
-
-Si encuentras algún problema durante la ejecución del script, asegúrate de que estás ejecutándolo con privilegios de administrador y que ambos archivos, `register_acestream_protocol.bat` y `start_acestream.bat`, están en el mismo directorio.
-
-Este enfoque elimina la necesidad de realizar cambios manuales en el Registro de Windows, simplificando la configuración para los usuarios.
-                                      
-Puedes revertir los cambios ejecutando este comando, que elimina la clave que hemos añadido en el Registro de Windows:
-```bash
-reg delete "HKEY_CLASSES_ROOT\acestream" /f
-```
 
 ## Construcción de la Imagen
 
@@ -132,6 +98,8 @@ utilizando un navegador web y yendo a `http://localhost:6878/webui/player/`.
 
 Para probar el reproductor personalizado, reemplaza `<acestream_id>` en la
 URL `http://localhost:6878/webui/player/<acestream_id>` con un ID de transmisión válido de Acestream.
+
+En el caso de un enlace 'acestream://xxxxxxxxxxxxxx', el acestream_id correspondería a 'xxxxxxxxxxxxxx'.
 
 ## Verificación Estado de Salud del Contenedor
 
