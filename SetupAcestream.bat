@@ -177,7 +177,7 @@ if "%STREAM_ID:~0,12%"=="%PREFIX%" (
 if "%STREAM_ID:~39,1%" NEQ "" if "%STREAM_ID:~40,1%"=="" (
     goto startAcestream
 ) else (
-    echo El ID de stream especificado no es correcto. Inténtelo de nuevo.
+    echo El ID de stream especificado no es correcto. Intentelo de nuevo.
     pause
     goto menu
 )
