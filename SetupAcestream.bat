@@ -1,13 +1,42 @@
 @echo off
 SETLOCAL ENABLEEXTENSIONS
+SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: Extraccion y validacion del ID de Stream desde el parametro proporcionado.
 set "STREAM_ID=%~1"
 set "PREFIX=acestream://"
 
+:: Obtencion de IP interna para tratar en contenedor
+set "INTERNAL_IP=127.0.0.1"
+:: Buscar la primera Direccion IPv4 y asignarla a INTERNAL_IP, solo si es diferente de 127.0.0.1
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4"') do (
+    set "IP_TEMP=%%a"
+    :: Eliminar espacios iniciales
+    set "IP_TEMP=!IP_TEMP: =!"
+    if "!IP_TEMP!" NEQ "127.0.0.1" (
+        set "INTERNAL_IP=!IP_TEMP!"
+        goto FoundIP
+    )
+)
+
+:FoundIP
 :: Verifica si se paso un argumento al script y procede a verificar si es un enlace Acestream.
 :: Si no se proporciona ningun argumento, el script redirige al usuario al menu principal.
 if "%STREAM_ID%"=="" (
+    :: Verificacion para el usuario, donde podra cambiar la IP interna.
+    echo Su IP interna asignada es %INTERNAL_IP%
+    echo.
+    echo Puedes revisar si es la IP correcta y sobreescribirla en el caso de que no lo fuese a continuacion.
+    echo Te dejo un enlace de interes donde puedes ver como obtenerla: https://www.avast.com/es-es/c-how-to-find-ip-address
+    pause
+    echo.
+    echo Si la IP es correcta ^(%INTERNAL_IP%^), presiona ENTER directamente. De lo contrario, escribe la IP correcta y luego presiona ENTER.
+    set /p USER_IP=Introduce aqui la IP o pulsa ENTER: 
+    if not "%USER_IP%"=="" set "INTERNAL_IP=%USER_IP%"
+
+    echo.
+    echo La IP a utilizar sera: %INTERNAL_IP%
+    pause
     goto menu
 )
 :: Verifica si el enlace proporcionado contiene el prefijo 'acestream://' y lo elimina para obtener solo el ID del stream.
@@ -111,8 +140,8 @@ goto menu
 :installAcestream
 echo.
 echo Preparando la instalacion de Acestream en Docker...
-set IMAGE_NAME=smarquezp/docker-acestream-ubuntu:latest
-set CONTAINER_NAME=acestream-container
+set IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest
+set CONTAINER_NAME=acestream-home-container
 set PORT=6878
 
 echo.
@@ -147,9 +176,10 @@ if %errorlevel% neq 0 (
     echo Un contenedor existente fue encontrado. Limpiando antes de la nueva instalacion...
     docker rm -f %CONTAINER_NAME% >nul 2>&1
 )
+
 echo.
 echo Iniciando el contenedor de Acestream con Docker...
-docker run -d -p %PORT%:%PORT% --name %CONTAINER_NAME% %IMAGE_NAME%
+docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% %IMAGE_NAME%
 
 echo.
 echo El contenedor de Acestream ha sido iniciado con exito y esta escuchando en el puerto %PORT%.
@@ -187,11 +217,11 @@ if "%STREAM_ID:~39,1%" NEQ "" if "%STREAM_ID:~40,1%"=="" (
 echo Preparando para abrir el stream con ID: %STREAM_ID%...
 if not "%STREAM_ID%"=="" (
     echo Iniciando el stream Acestream...
-    start http://127.0.0.1:%PORT%/webui/player/%STREAM_ID%
+    start http://%INTERNAL_IP%:%PORT%/webui/player/%STREAM_ID%
 ) else (
     echo No se ha proporcionado un ID de stream.
     echo Abriendo la interfaz web de Acestream para que puedas introducir el ID manualmente...
-    start http://127.0.0.1:%PORT%/webui/player/
+    start http://%INTERNAL_IP%:%PORT%/webui/player/
 )
 :exit
 
