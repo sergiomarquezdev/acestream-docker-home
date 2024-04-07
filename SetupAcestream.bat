@@ -1,6 +1,5 @@
 @echo off
-SETLOCAL ENABLEEXTENSIONS
-SETLOCAL ENABLEDELAYEDEXPANSION
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
 :: Extraccion y validacion del ID de Stream desde el parametro proporcionado.
 set "STREAM_ID=%~1"
@@ -223,7 +222,8 @@ if not "%STREAM_ID%"=="" (
     echo Abriendo la interfaz web de Acestream para que puedas introducir el ID manualmente...
     start http://%INTERNAL_IP%:%PORT%/webui/player/
 )
-:exit
+pause
+goto exit
 
 :end
 echo.
