@@ -42,6 +42,9 @@ archivo [SetupAcestream.bat](https://github.com/marquezpsergio/acestream-docker/
 El script te guiará a través de las diferentes opciones, permitiéndote instalar Docker si es necesario, configurar el
 protocolo acestream y lanzar Acestream dentro de un contenedor Docker.
 
+Este script también permite configurar la IP interna del contenedor para facilitar el acceso a Acestream desde otros
+dispositivos dentro de tu red local.
+
 Recuerda que debes ejecutar el archivo en modo Administrador para configurar los registros para el protocolo Acestream,
 esto es, asociar todos los enlaces 'acestream://' a este script.
 De esta manera, cada vez que ejecutes un enlace 'acestream://xxxx' en el navegador, se ejecutará automáticamente el
@@ -86,6 +89,12 @@ Con la imagen Docker construida, puedes iniciar un contenedor para ejecutar Aces
 
 ```bash
 docker run --name acestream -d -p 6878:6878 -p 8621:8621 docker-acestream-ubuntu
+```
+
+* Esta IP podrá cambiar a tu IP interna, añadiendo el parámetro '-e INTERNAL_IP=192.168.1.10' (IP de ejemplo)
+
+```bash
+docker run --name acestream -d -p 6878:6878 -p 8621:8621 -e INTERNAL_IP=192.168.1.10 docker-acestream-ubuntu
 ```
 
 Este comando ejecutará un contenedor llamado `acestream`, en modo desacoplado (`-d`), mapeando los puertos `6878`
