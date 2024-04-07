@@ -22,20 +22,6 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4"') do (
 :: Verifica si se paso un argumento al script y procede a verificar si es un enlace Acestream.
 :: Si no se proporciona ningun argumento, el script redirige al usuario al menu principal.
 if "%STREAM_ID%"=="" (
-    :: Verificacion para el usuario, donde podra cambiar la IP interna.
-    echo Su IP interna asignada es %INTERNAL_IP%
-    echo.
-    echo Puedes revisar si es la IP correcta y sobreescribirla en el caso de que no lo fuese a continuacion.
-    echo Te dejo un enlace de interes donde puedes ver como obtenerla: https://www.avast.com/es-es/c-how-to-find-ip-address
-    pause
-    echo.
-    echo Si la IP es correcta ^(%INTERNAL_IP%^), presiona ENTER directamente. De lo contrario, escribe la IP correcta y luego presiona ENTER.
-    set /p USER_IP=Introduce aqui la IP o pulsa ENTER: 
-    if not "%USER_IP%"=="" set "INTERNAL_IP=%USER_IP%"
-
-    echo.
-    echo La IP a utilizar sera: %INTERNAL_IP%
-    pause
     goto menu
 )
 :: Verifica si el enlace proporcionado contiene el prefijo 'acestream://' y lo elimina para obtener solo el ID del stream.
@@ -181,6 +167,22 @@ if %errorlevel% neq 0 (
     echo Un contenedor existente fue encontrado. Limpiando antes de la nueva instalacion...
     docker rm -f %CONTAINER_NAME% >nul 2>&1
 )
+
+echo.
+:: Verificacion para el usuario, donde podra cambiar la IP interna.
+echo Su IP interna asignada es %INTERNAL_IP%
+echo.
+echo Puedes revisar si es la IP correcta y sobreescribirla en el caso de que no lo fuese a continuacion.
+echo Te dejo un enlace de interes donde puedes ver como obtenerla: https://www.avast.com/es-es/c-how-to-find-ip-address
+pause
+echo.
+echo Si la IP es correcta ^(%INTERNAL_IP%^), presiona ENTER directamente. De lo contrario, escribe la IP correcta y luego presiona ENTER.
+set /p USER_IP=Introduce aqui la IP o pulsa ENTER:
+if not "%USER_IP%"=="" set "INTERNAL_IP=%USER_IP%"
+
+echo.
+echo La IP a utilizar sera: %INTERNAL_IP%
+pause
 
 echo.
 echo Iniciando el contenedor de Acestream con Docker...
