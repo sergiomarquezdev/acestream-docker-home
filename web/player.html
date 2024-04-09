@@ -7,6 +7,8 @@
           href="https://lh3.googleusercontent.com/drive-viewer/AKGpihZoBOT8YvVO8u53lht7oeVVmko0q4EqDT5mVGHpurxXNl9vIrM96zStqLVdIaXWm8n6PSrkRwIAzHnUJKhrkDdwMSNMHX0IYkU=w1314-h1045"/>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.0/dist/purify.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
     <style>
         body, html, video, .video-js {
@@ -82,20 +84,79 @@
         }
 
         #links-list {
-            position: absolute;
-            top: 35px;
-            background: rgba(255, 255, 255, 0.7);
             padding: 10px;
-            border-radius: 5px;
-            max-height: calc(100vh - 50px);
-            width: 300px;
-            overflow-y: auto;
         }
 
         .link-item {
             cursor: pointer;
             margin: 5px 0;
         }
+
+        #links-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #links-list .title {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #links-list .column {
+            display: flex;
+            flex-direction: column;
+            flex-basis: calc(33% - 20px);
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #links-list .name-with-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding-left: 10px;
+        }
+
+        #links-list .name h3 {
+            margin: 0; /* Quita el margen si es necesario */
+            padding-right: 10px; /* Añade un poco de espacio a la derecha del nombre */
+        }
+
+        #links-list .links {
+            display: flex;
+            gap: 10px;
+        }
+
+        #links-list .link-button {
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            background-color: white;
+            color: #28a745;
+            padding: 5px 10px;
+            text-align: center;
+            display: inline-block;
+            transition: background-color 0.3s, color 0.3s;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        #links-list .link-button:hover {
+            background-color: #218838;
+            color: white;
+        }
+
 
     </style>
 </head>
@@ -120,8 +181,8 @@
     </button>
     <input type="text" id="acestream-link-input" placeholder="Insert Acestream link here"/>
     <button id="load-button" onclick="loadAceStream()">Load</button>
-    <div id="links-list"></div>
 </div>
+<div id="links-list"></div>
 <script>
     // On initial load, load from the link if the parameter is provided
     // Obtain the playerId from an external variable
@@ -180,27 +241,85 @@
         loadButton.innerText = lang === "es" ? "Cargar" : "Load";
     }
 
-    // Fetch and display the list of links
-    // Assuming the fetch has already been done and the data is loaded into #links-list
-    fetch("https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d")
-        .then((response) => response.text())
-        .then((data) => {
-            const linksList = document.getElementById("links-list");
-            linksList.innerHTML = data;
+    fetch('https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d')
+        .then(response => response.text())
+        .then(html => {
+            // Use DOMParser to parse the HTML string
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
 
-            // Find all links in the loaded content
-            const links = linksList.querySelectorAll('a');
+            // Extract the 'doc' div from the parsed HTML
+            const docDiv = doc.querySelector('#doc'); // Use .querySelector if .getElementById does not work
 
-            // Modify each link to execute a function instead of navigating
-            links.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent navigation
-                    const acestreamLink = link.getAttribute('href'); // Get the href of the link
-                    loadAcestream(acestreamLink); // Call your function with the link
-                });
-            });
+            // Ensure docDiv is not null and has content
+            if (docDiv) {
+                const docHtml = docDiv.innerHTML; // Get the innerHTML of the doc div
+
+                // Regex to match the content between the patterns
+                const contentRegex = /---\s*##([\s\S]*?)&lt;style&gt;/;
+                const match = docHtml.match(contentRegex);
+
+                if (match && match[1]) {
+                    // The desired content is in the first capturing group
+                    const desiredContent = match[1].trim();
+
+                    console.log(desiredContent);
+
+                    // Ejecutar la función con el contenido deseado
+                    processAndDisplayContent(desiredContent);
+
+                } else {
+                    console.error('The pattern was not found in the HTML content');
+                }
+            } else {
+                console.error('docDiv is null or does not contain any content');
+            }
         })
-        .catch((error) => console.error("Error loading content:", error));
+        .catch(error => {
+            console.error('Error fetching the Markdown content:', error);
+        });
+
+    // Función para procesar el contenido
+    function processAndDisplayContent(content) {
+        // Regex actualizado
+        const titleRegex = /==\*\*(.*?)\*\*==\s*([\s\S]*?)(?=(==\*\*|$))/g;
+
+        let match;
+        let htmlContent = '';
+
+        while ((match = titleRegex.exec(content)) !== null) {
+            const title = match[1];
+            const body = match[2];
+
+            let columnContent = `<div class="title"><h2>${title}</h2></div>`;
+
+            const nameAndLinkRegex = /\*\*(.*?)\*\*\s*(?:\[:arrow_forward:\]\((acestream:\/\/.*?)\))+/g;
+            let nameMatch;
+            while ((nameMatch = nameAndLinkRegex.exec(body)) !== null) {
+                const name = nameMatch[1];
+                const links = nameMatch[0];
+
+                columnContent += `<div class="name-with-links">`;
+                columnContent += `<div class="name"><h3>${name}</h3></div>`;
+                columnContent += `<div class="links">`;
+
+                const linkRegex = /\[:arrow_forward:\]\((acestream:\/\/.*?)\)/g;
+                let linkMatch;
+                while ((linkMatch = linkRegex.exec(links)) !== null) {
+                    const link = linkMatch[1];
+                    columnContent += `<a href="${link}" class="link-button"><i class="fa-solid fa-play"></i></a>`;
+                }
+
+                columnContent += `</div>`; // Cierra el div de los enlaces
+                columnContent += `</div>`; // Cierra el div de name-with-links
+            }
+
+            htmlContent += `<div class="column">${columnContent}</div>`;
+        }
+
+        document.getElementById('links-list').innerHTML = htmlContent;
+    }
+
 </script>
 </body>
 </html>
