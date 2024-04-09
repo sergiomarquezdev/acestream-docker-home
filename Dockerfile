@@ -42,6 +42,8 @@ RUN mkdir -p /opt/acestream && \
 # Acceso en 'http://${INTERNAL_IP}:6878/webui/player/<ID de Acestream>'.
 # Se obtiene del enlace 'acestream://xxxxxxxxxx', donde <ID de Acestream> sería 'xxxxxxxxxx'.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
+COPY web/styles/styles.css /opt/acestream/data/webui/html/styles.css
+COPY web/scripts/scripts.js /opt/acestream/data/webui/html/scripts.js
 
 # Preparar directorio
 RUN mkdir /acelink
