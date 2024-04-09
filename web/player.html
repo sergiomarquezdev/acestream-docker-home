@@ -115,7 +115,7 @@
         #links-list .column {
             display: flex;
             flex-direction: column;
-            flex-basis: calc(33% - 20px);
+            flex-basis: calc(45%);
             background-color: #f8f9fa;
             border-radius: 5px;
             overflow: hidden;
@@ -126,17 +126,17 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 10px;
-            padding-left: 10px;
+            padding-left: 5px;
         }
 
         #links-list .name h3 {
-            margin: 0; /* Quita el margen si es necesario */
-            padding-right: 10px; /* Añade un poco de espacio a la derecha del nombre */
+            margin: 0;
+            padding-left: 5px;
         }
 
         #links-list .links {
             display: flex;
-            gap: 10px;
+            gap: 5px;
         }
 
         #links-list .link-button {
@@ -317,7 +317,39 @@
             htmlContent += `<div class="column">${columnContent}</div>`;
         }
 
-        document.getElementById('links-list').innerHTML = htmlContent;
+        let finalHtmlContent = postProcessContent(htmlContent);
+        document.getElementById('links-list').innerHTML = finalHtmlContent;
+
+
+        const linksList = document.getElementById('links-list');
+        const links = linksList.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Previene la navegación
+                const acestreamLink = link.getAttribute('href'); // Obtiene el href del enlace
+                loadAcestreamUrl(acestreamLink); // Llama a tu función con el enlace
+            });
+        });
+    }
+
+    function postProcessContent(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const allNameWithLinks = doc.querySelectorAll('.name-with-links');
+
+        allNameWithLinks.forEach((div, index) => {
+            // Si encontramos un '720p', movemos este div al div anterior (el de '1080p').
+            if (div.querySelector('.name h3').textContent.trim() === '720p' && index > 0) {
+                const previousDiv = allNameWithLinks[index - 1];
+                const nameDiv = div.querySelector('.name');
+                previousDiv.appendChild(nameDiv); // Añade los enlaces de '720p' al 'div' anterior.
+                const linksDiv = div.querySelector('.links');
+                previousDiv.appendChild(linksDiv); // Añade los enlaces de '720p' al 'div' anterior.
+                div.remove(); // Elimina el 'div' de '720p' actual, ya que ahora está vacío.
+            }
+        });
+
+        return doc.body.innerHTML; // Devuelve el nuevo HTML procesado.
     }
 
 </script>
