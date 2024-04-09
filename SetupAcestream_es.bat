@@ -47,11 +47,11 @@ echo.
 echo [Menu de Opciones]
 echo -------------------------------------------------------------------------------
 echo [1] Configurar protocolo Acestream en Windows (OPCIONAL)
-echo    > Crea los registros necesarios en el Registro de Windows para abrir los enlaces 'acestream://' directamente.
+echo    - Crea los registros necesarios en el Registro de Windows para abrir los enlaces 'acestream://' directamente.
 echo [2] Instalar y ejecutar Acestream en Docker
-echo    > Proceso de instalacion de Acestream en Docker (Docker debe estar en ejecucion).
+echo    - Proceso de instalacion de Acestream en Docker (Docker debe estar en ejecucion).
 echo [3] Ejecutar navegador con URL para Acestream
-echo    > Abre el navegador con el enlace Acestream (requiere contenedor Docker corriendo y activo).
+echo    - Abre el navegador con el enlace Acestream (requiere contenedor Docker corriendo y activo).
 echo [0] Salir
 echo -------------------------------------------------------------------------------
 echo.

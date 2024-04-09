@@ -47,11 +47,11 @@ echo.
 echo [Options Menu]
 echo -------------------------------------------------------------------------------
 echo [1] Configure Acestream protocol in Windows (OPTIONAL)
-echo    > Creates the necessary registry entries in Windows to directly open 'acestream://' links.
+echo    - Creates the necessary registry entries in Windows to directly open 'acestream://' links.
 echo [2] Install and run Acestream in Docker
-echo    > Acestream installation process in Docker (Docker must be running).
+echo    - Acestream installation process in Docker (Docker must be running).
 echo [3] Execute browser with Acestream URL
-echo    > Opens the browser with the Acestream link (requires Docker container running and active).
+echo    - Opens the browser with the Acestream link (requires Docker container running and active).
 echo [0] Exit
 echo -------------------------------------------------------------------------------
 echo.
