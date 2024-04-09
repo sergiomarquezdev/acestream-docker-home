@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8"/>
     <title>Ace Link</title>
     <link rel="icon" type="image/x-icon"
-          href="https://lh3.googleusercontent.com/drive-viewer/AKGpihZoBOT8YvVO8u53lht7oeVVmko0q4EqDT5mVGHpurxXNl9vIrM96zStqLVdIaXWm8n6PSrkRwIAzHnUJKhrkDdwMSNMHX0IYkU=w1314-h1045">
+          href="https://lh3.googleusercontent.com/drive-viewer/AKGpihZoBOT8YvVO8u53lht7oeVVmko0q4EqDT5mVGHpurxXNl9vIrM96zStqLVdIaXWm8n6PSrkRwIAzHnUJKhrkDdwMSNMHX0IYkU=w1314-h1045"/>
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"/>
@@ -13,7 +13,7 @@
             margin: 0;
             padding: 0;
             width: 100vw;
-            height: 100vh;
+            min-height: 40vw;
         }
 
         .video-js .vjs-big-play-button {
@@ -22,7 +22,7 @@
             transform: translate(-50%, -50%);
         }
 
-        #acestream-link-input {
+        #acestream-link {
             display: flex;
             align-items: center;
             gap: 1px;
@@ -35,25 +35,39 @@
             border-radius: 5px;
         }
 
-        #acestream-link {
+        #acestream-link-input {
             border: 1px solid #ccc;
             border-radius: 3px;
             padding: 5px 10px;
             width: 300px;
+            margin-left: 5px;
         }
 
-        #acestream-link-input button {
+        #acestream-link button {
+            border: none;
+            cursor: pointer;
+        }
+
+        #load-button {
             background-color: #007bff;
             color: white;
             border: none;
             padding: 5px 10px;
             margin-left: 5px;
-            cursor: pointer;
             border-radius: 3px;
         }
 
-        #acestream-link-input button:hover {
+        #load-button:hover {
             background-color: #0056b3;
+        }
+
+        .lang-button {
+            background-color: transparent;
+        }
+
+        .lang-button:hover {
+            transform: scale(1.1);
+            transition-duration: 1ms;
         }
 
         #toggle-view {
@@ -66,72 +80,127 @@
             padding: 5px;
             border-radius: 50%;
         }
+
+        #links-list {
+            position: absolute;
+            top: 35px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            max-height: calc(100vh - 50px);
+            width: 300px;
+            overflow-y: auto;
+        }
+
+        .link-item {
+            cursor: pointer;
+            margin: 5px 0;
+        }
+
     </style>
 </head>
 <body>
 <div id="toggle-view">
-    <i class="fas fa-eye" id="toggle-icon"></i>
+    <i class="fas fa-eye-slash" id="toggle-icon"></i>
 </div>
-<div id="acestream-link-input">
-    <input type="text" id="acestream-link" placeholder="Insertar aquí el enlace Acestream"/>
-    <button onclick="loadAceStream()">Cargar</button>
-</div>
-<video
-        id="video"
-        class="video-js vjs-default-skin"
-        controls
-        preload="auto"
-        data-setup="{}"
-        width="100%"
-        height="100%">
-    <p class="vjs-no-js">
-        To view this video please enable JavaScript, and consider upgrading to a web browser that
+<video id="video" class="video-js vjs-default-skin" controls preload="auto" data-setup="{}" width="100%" height="100%">
+    <p class="vjs-no-js"> To view this video please enable JavaScript, and consider upgrading to a web browser that
         <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
     </p>
 </video>
+<div id="acestream-link">
+    <button class="lang-button" onclick="changeLanguage('es')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Bandera_de_Espa%C3%B1a_%28sin_escudo%29.svg"
+             alt="Español" title="Español" style="height: 15px"/>
+    </button>
+    <button class="lang-button" onclick="changeLanguage('en')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/English_language.svg"
+             alt="English" title="English" style="height: 15px"
+        />
+    </button>
+    <input type="text" id="acestream-link-input" placeholder="Insert Acestream link here"/>
+    <button id="load-button" onclick="loadAceStream()">Load</button>
+    <div id="links-list"></div>
+</div>
 <script>
-    // En la primera carga, cargamos desde el enlace si viene el parámetro
-    // Obtener el playerId de la variable externa
+    // On initial load, load from the link if the parameter is provided
+    // Obtain the playerId from an external variable
     let playerId = "{player_id}";
-
     document.title = `${document.title} [${playerId.substr(0, 7)}]`;
-    let player = videojs('video');
+    let player = videojs("video");
     player.src({
         src: `http://127.0.0.1:6878/ace/manifest.m3u8?id=${playerId}`,
-        type: 'application/x-mpegURL' // Ajuste para el tipo MIME correcto para streams HLS.
+        type: "application/x-mpegURL", // Adjustment for the correct MIME type for HLS streams.
     });
     player.play();
 
     function loadAceStream() {
-        let acestreamLink = document.getElementById('acestream-link').value;
-        // Elimina el prefijo 'acestream://' si está presente
-        acestreamLink = acestreamLink.replace('acestream://', '');
-        // Comprueba si el ID tiene más de 1 caracter
+        let acestreamLink = document.getElementById("acestream-link-input").value;
+        // Remove the 'acestream://' prefix if present
+        acestreamLink = acestreamLink.replace("acestream://", "");
+        // Check if the ID has more than 1 character
         if (acestreamLink.length > 1) {
             const playerId = acestreamLink;
             document.title = `Ace Link [${playerId.substr(0, 7)}]`;
             player.src({
                 src: `http://127.0.0.1:6878/ace/manifest.m3u8?id=${playerId}`,
-                type: 'application/x-mpegURL'
+                type: "application/x-mpegURL",
             });
             player.play();
         } else {
-            alert('Por favor, inserta un enlace Acestream válido.');
+            alert("Please insert a valid Acestream link.");
         }
     }
 
-    // Funcionalidad para mostrar/ocultar el input y ajustar el icono de toggle
-    document.getElementById('toggle-view').addEventListener('click', function () {
-        let inputDiv = document.getElementById('acestream-link-input');
-        let icon = document.getElementById('toggle-icon');
+    function loadAcestreamUrl(link) {
+        document.getElementById('acestream-link-input').value = link;
+        loadAceStream();
+    }
+
+    // Functionality to show/hide input and adjust toggle icon
+    document.getElementById("toggle-view").addEventListener("click", function () {
+        let inputDiv = document.getElementById("acestream-link");
+        let icon = document.getElementById("toggle-icon");
         if (inputDiv.style.display === "none") {
             inputDiv.style.display = "flex";
-            icon.className = "fas fa-eye-slash"; // Cambiar a icono de ojo cerrado
+            icon.className = "fas fa-eye-slash"; // Change to closed eye icon
         } else {
             inputDiv.style.display = "none";
-            icon.className = "fas fa-eye"; // Cambiar a icono de ojo abierto
+            icon.className = "fas fa-eye"; // Change to open eye icon
         }
     });
+
+    // Function to change the page language
+    function changeLanguage(lang) {
+        // Update the input placeholder
+        const acestreamLinkInput = document.getElementById("acestream-link-input");
+        acestreamLinkInput.placeholder = lang === "es" ? "Insertar aquí el enlace Acestream" : "Insert Acestream link here";
+        // Update the button text
+        const loadButton = document.getElementById("load-button");
+        loadButton.innerText = lang === "es" ? "Cargar" : "Load";
+    }
+
+    // Fetch and display the list of links
+    // Assuming the fetch has already been done and the data is loaded into #links-list
+    fetch("https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d")
+        .then((response) => response.text())
+        .then((data) => {
+            const linksList = document.getElementById("links-list");
+            linksList.innerHTML = data;
+
+            // Find all links in the loaded content
+            const links = linksList.querySelectorAll('a');
+
+            // Modify each link to execute a function instead of navigating
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent navigation
+                    const acestreamLink = link.getAttribute('href'); // Get the href of the link
+                    loadAcestream(acestreamLink); // Call your function with the link
+                });
+            });
+        })
+        .catch((error) => console.error("Error loading content:", error));
 </script>
 </body>
 </html>
