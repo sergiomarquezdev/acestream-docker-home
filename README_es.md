@@ -74,7 +74,7 @@ docker build --no-cache --build-arg ACESTREAM_VERSION=tu_version_acestream --bui
 Con la imagen Docker construida, puedes iniciar un contenedor para ejecutar Acestream de la siguiente manera:
 
 ```bash
-docker run --name acestream -d -p 6878:6878 docker-acestream-ubuntu-home
+docker run --name acestream -d -p 6878:6878 --restart unless-stopped docker-acestream-ubuntu-home
 ```
 
 Este comando ejecutará un contenedor llamado `acestream`, en modo desacoplado (`-d`), mapeando el puerto `6878` del host
