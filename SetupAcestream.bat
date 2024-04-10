@@ -174,7 +174,7 @@ pause
 
 echo Starting the Acestream container...
 :: Starts the Docker container with Acestream.
-docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% %IMAGE_NAME% >nul 2>&1
+docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% --restart unless-stopped %IMAGE_NAME% >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Could not start the container. Check the configuration and try again.
     pause

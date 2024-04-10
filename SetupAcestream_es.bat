@@ -174,7 +174,7 @@ pause
 
 echo Iniciando el contenedor de Acestream...
 :: Inicia el contenedor Docker con Acestream.
-docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% %IMAGE_NAME% >nul 2>&1
+docker run -d -p %PORT%:%PORT% -e INTERNAL_IP=%INTERNAL_IP% --name %CONTAINER_NAME% --restart unless-stopped %IMAGE_NAME% >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: No se pudo iniciar el contenedor. Verifica la configuracion e intentalo de nuevo.
     pause
