@@ -1,5 +1,5 @@
-const BASE_STREAM_URL = 'http://127.0.0.1:6878/ace/manifest.m3u8?id=';
-const ACESTREAM_PREFIX = 'acestream://';
+const BASE_STREAM_URL = "http://127.0.0.1:6878/ace/manifest.m3u8?id=";
+const ACESTREAM_PREFIX = "acestream://";
 const player = videojs("video");
 
 // Carga inicial del video
@@ -78,6 +78,24 @@ fetch('https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d')
         console.error('Error fetching the Markdown content:', error);
     });
 
+// Procesar contenido obtenido
+function postProcessContent(htmlContent) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const allNameWithLinks = doc.querySelectorAll('.name-with-links');
+    allNameWithLinks.forEach((div, index) => {
+        if (div.querySelector('.name h3').textContent.trim() === '720p' && index > 0) {
+            const previousDiv = allNameWithLinks[index - 1];
+            const nameDiv = div.querySelector('.name');
+            previousDiv.appendChild(nameDiv);
+            const linksDiv = div.querySelector('.links');
+            previousDiv.appendChild(linksDiv);
+            div.remove();
+        }
+    });
+    return doc.body.innerHTML;
+}
+
 // Procesar y mostrar el contenido obtenido
 function processAndDisplayContent(content) {
     const titleRegex = /==\*\*(.*?)\*\*==\s*([\s\S]*?)(?=(==\*\*|$))/g;
@@ -119,20 +137,4 @@ function processAndDisplayContent(content) {
     });
 }
 
-// Procesar contenido obtenido
-function postProcessContent(htmlContent) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, 'text/html');
-    const allNameWithLinks = doc.querySelectorAll('.name-with-links');
-    allNameWithLinks.forEach((div, index) => {
-        if (div.querySelector('.name h3').textContent.trim() === '720p' && index > 0) {
-            const previousDiv = allNameWithLinks[index - 1];
-            const nameDiv = div.querySelector('.name');
-            previousDiv.appendChild(nameDiv);
-            const linksDiv = div.querySelector('.links');
-            previousDiv.appendChild(linksDiv);
-            div.remove();
-        }
-    });
-    return doc.body.innerHTML;
-}
+
