@@ -61,6 +61,24 @@ docker run --name acestream -d -p 6878:6878 docker-acestream-ubuntu-home
 
 This command will run a container named `acestream`, in detached mode (`-d`), mapping the host's port `6878` to the container, allowing you to access the Acestream service through this port.
 
+## Running the Container via Docker Compose
+
+Download or copy the contents of ``docker-compose.yml`` file.
+
+Then, on the same place where it is located:
+
+```bash
+docker compose up -d
+```
+
+### Updating with Docker Compose
+
+Execute:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
 ## Accessing the Web Interface
 
 Once the container is running and there are no errors in the logs, you can access the Acestream web interface using a web browser and going to `http://localhost:6878/webui/player/`. Here, you can directly load Acestream links into the field located in the upper left corner of the screen. When you wish, you can hide/show it with the icon to its left.
