@@ -43,7 +43,6 @@ RUN mkdir -p /opt/acestream && \
 # Se obtiene del enlace 'acestream://xxxxxxxxxx', donde <ID de Acestream> sería 'xxxxxxxxxx'.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
 COPY web/styles/styles.css /opt/acestream/data/webui/html/styles.css
-COPY web/scripts/scripts.js /opt/acestream/data/webui/html/scripts.js
 COPY web/favicon.ico /opt/acestream/data/webui/html/favicon.ico
 
 # Preparar directorio
