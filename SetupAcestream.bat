@@ -121,7 +121,7 @@ echo [Acestream Installation in Docker]
 echo ----------------------------------------
 echo Setting up the environment for Acestream...
 set IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest
-set CONTAINER_NAME=acestream-home-container
+set CONTAINER_NAME=acestream
 set PORT=6878
 
 echo Checking Docker...
