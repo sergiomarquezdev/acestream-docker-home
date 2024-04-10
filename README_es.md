@@ -80,6 +80,24 @@ docker run --name acestream -d -p 6878:6878 docker-acestream-ubuntu-home
 Este comando ejecutará un contenedor llamado `acestream`, en modo desacoplado (`-d`), mapeando el puerto `6878` del host
 al contenedor, permitiéndote acceder al servicio Acestream a través de este puerto.
 
+## Ejecución del Contenedor con Docker Compose
+
+Descarga o copia el contenido del fichero ``docker-compose.yml``.
+
+Desde la misma ruta donde lo hayas dejado, ejecuta:
+
+```bash
+docker compose up -d
+```
+
+### Actualizar con Docker Compose
+
+Ejecuta:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
 ## Acceso a Interfaz Web
 
 Una vez que el contenedor esté en ejecución y no haya errores en los logs, puedes acceder a la interfaz web de Acestream
