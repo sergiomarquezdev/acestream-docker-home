@@ -1,5 +1,7 @@
 # Dockerized Acestream
 
+[Leer documentación en Español](README_es.md)
+
 This project facilitates the deployment of Acestream within a Docker container, using Ubuntu 18.04 (Bionic Beaver) to
 ensure compatibility with the version of Acestream used.
 
