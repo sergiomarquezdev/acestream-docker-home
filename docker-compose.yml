@@ -6,6 +6,8 @@ services:
     restart: unless-stopped
     ports:
       - 6878:6878
+    environment:
+      - INTERNAL_IP=127.0.0.1
 networks:
   default:
     driver: bridge

@@ -168,7 +168,7 @@
 <div id="acestream-link">
     <button class="lang-button" onclick="changeLanguage('es')">
         <img src="https://upload.wikimedia.org/wikipedia/commons/f/ff/Bandera_de_Espa%C3%B1a_%28sin_escudo%29.svg"
-             alt="Español" title="Español" style="height: 15px"/>
+             alt="Spanish" title="Spanish" style="height: 15px"/>
     </button>
     <button class="lang-button" onclick="changeLanguage('en')">
         <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/English_language.svg"
@@ -184,7 +184,7 @@
     const ACESTREAM_PREFIX = "acestream://";
     const player = videojs("video");
 
-    // Carga inicial del video
+    // Initial video loading
     function initialLoad(playerId) {
         document.title += `[${playerId.substr(0, 7)}]`;
         player.src({
@@ -194,7 +194,7 @@
         player.play();
     }
 
-    // Carga del stream de AceStream
+    // Load AceStream stream
     function loadAceStream(link) {
         const playerId = link.replace(ACESTREAM_PREFIX, '');
         if (playerId.length > 1) {
@@ -209,7 +209,7 @@
         }
     }
 
-    // Mostrar/ocultar input de Acestream
+    // Show/hide Acestream input
     function toggleAcestreamInput() {
         const inputDiv = document.getElementById('acestream-link');
         const icon = document.getElementById('toggle-icon');
@@ -217,8 +217,7 @@
         icon.className = inputDiv.style.display === 'none' ? 'fas fa-eye' : 'fas fa-eye-slash';
     }
 
-    // Cambiar idioma de la página
-
+    // Change page language
     function changeLanguage(lang) {
         const acestreamLinkInput = document.getElementById('acestream-link-input');
         acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' : 'Insert Acestream link here';
@@ -235,7 +234,7 @@
         loadAceStream(acestreamLink);
     });
 
-    // Manejar el contenido obtenido
+    // Handle fetched content
     fetch('https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d')
         .then(response => response.text())
         .then(html => {
@@ -260,7 +259,7 @@
             console.error('Error fetching the Markdown content:', error);
         });
 
-    // Procesar contenido obtenido
+    // Process fetched content
     function postProcessContent(htmlContent) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, 'text/html');
@@ -278,7 +277,7 @@
         return doc.body.innerHTML;
     }
 
-    // Procesar y mostrar el contenido obtenido
+    // Process and display fetched content
     function processAndDisplayContent(content) {
         const titleRegex = /==\*\*(.*?)\*\*==\s*([\s\S]*?)(?=(==\*\*|$))/g;
         let match;
