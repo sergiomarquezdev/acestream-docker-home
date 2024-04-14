@@ -64,6 +64,8 @@ echo Using IP: %INTERNAL_IP%
 :: Creation or update of the docker-compose.yml file.
 :: -------------------------
 :startDocker
+docker stop %SERVICE_NAME% >NUL 2>&1
+docker rm %SERVICE_NAME% -f >NUL 2>&1
 echo.
 echo Creating or updating the docker-compose.yml file...
 >%DOCKER_COMPOSE_FILE% (
