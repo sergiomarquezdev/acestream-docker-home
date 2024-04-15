@@ -89,12 +89,19 @@
             margin: 5px 0;
         }
 
+        #linkMD {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 auto;
+            padding-left: 20px;
+        }
+
         #links-list {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0px 20px 20px 20px;
         }
 
         #links-list .title {
@@ -177,6 +184,13 @@
     </button>
     <input type="text" id="acestream-link-input" placeholder="Insert Acestream link here"/>
     <button id="load-button">Load</button>
+</div>
+<div id="linkMD">
+    <p>
+        @ <a
+            href="https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d" target="_blank">https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan
+        -d</a>
+    </p>
 </div>
 <div id="links-list"></div>
 <script>
