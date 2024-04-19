@@ -30,9 +30,7 @@ RUN set -ex && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3.8 get-pip.py && \
     pip install --no-cache-dir -r /requirements.txt && \
-    pip install lxml && \
-    pip install apsw && \
-    pip install PyNaCl && \
+    pip install lxml apsw PyNaCl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/* && \
     rm /requirements.txt get-pip.py
