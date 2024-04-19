@@ -2,10 +2,12 @@
 FROM ubuntu:bionic
 
 # Define arguments for the Acestream version and its SHA256 hash.
-ARG ACESTREAM_VERSION=3.1.74_ubuntu_18.04_x86_64
-ARG ACESTREAM_SHA256=87db34c1aedc55649a8f8f5f4b6794581510701fc7ffbd47aaec0e9a2de2b219
+ARG ACESTREAM_VERSION=3.1.75rc4_ubuntu_18.04_x86_64_py3.8
+ARG ACESTREAM_SHA256=6D4947DFFAD58754A6DE725D49F8F9A574931C13C293EB4C9C3F324E93BA8356
 
 ENV INTERNAL_IP=127.0.0.1
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # Copy the requirements.txt file into the build context.
 # Make sure you have a valid requirements.txt in your build context.
@@ -16,20 +18,24 @@ RUN set -ex && \
     apt-get update && \
     apt-get install -yq --no-install-recommends \
         ca-certificates \
-        python2.7 \
-        libpython2.7 \
+        python3.8 \
+        python3.8-distutils \
         net-tools \
-        python-setuptools \
-        python-m2crypto \
-        python-apsw \
-        python-lxml \
+        libpython3.8 \
         wget \
-        python-pip \
-        build-essential && \
+        libsqlite3-dev \
+        build-essential \
+        libxml2-dev \
+        libxslt1-dev && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python3.8 get-pip.py && \
     pip install --no-cache-dir -r /requirements.txt && \
+    pip install lxml && \
+    pip install apsw && \
+    pip install PyNaCl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/* && \
-    rm /requirements.txt
+    rm /requirements.txt get-pip.py
 
 # Install Acestream.
 RUN mkdir -p /opt/acestream && \
