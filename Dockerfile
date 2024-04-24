@@ -2,8 +2,8 @@
 FROM ubuntu:bionic
 
 # Define arguments for the Acestream version and its SHA256 hash.
-ARG ACESTREAM_VERSION=3.1.75rc4_ubuntu_18.04_x86_64_py3.8
-ARG ACESTREAM_SHA256=6D4947DFFAD58754A6DE725D49F8F9A574931C13C293EB4C9C3F324E93BA8356
+ARG ACESTREAM_VERSION=https://download.acestream.media/linux/acestream_3.2.3_ubuntu_18.04_x86_64_py3.8.tar.gz
+ARG ACESTREAM_SHA256=bf45376f1f28aaff7d9849ff991bf34a6b9a65542460a2344a8826126c33727d
 
 ENV INTERNAL_IP=127.0.0.1
 ENV LANG=C.UTF-8
@@ -37,7 +37,7 @@ RUN set -ex && \
 
 # Install Acestream.
 RUN mkdir -p /opt/acestream && \
-    wget --no-verbose --output-document acestream.tgz "https://download.acestream.media/linux/acestream_${ACESTREAM_VERSION}.tar.gz" && \
+    wget --no-verbose --output-document acestream.tgz "${ACESTREAM_VERSION}" && \
     echo "${ACESTREAM_SHA256} acestream.tgz" | sha256sum --check && \
     tar --extract --gzip --directory /opt/acestream --file acestream.tgz && \
     rm acestream.tgz && \
