@@ -1,16 +1,15 @@
 # Set the base image.
-FROM ubuntu:bionic
+FROM ubuntu:22.04
 
 # Define arguments for the Acestream version and its SHA256 hash.
-ARG ACESTREAM_VERSION=https://download.acestream.media/linux/acestream_3.2.3_ubuntu_18.04_x86_64_py3.8.tar.gz
-ARG ACESTREAM_SHA256=bf45376f1f28aaff7d9849ff991bf34a6b9a65542460a2344a8826126c33727d
+ARG ACESTREAM_VERSION=https://download.acestream.media/linux/acestream_3.2.3_ubuntu_22.04_x86_64_py3.10.tar.gz
+ARG ACESTREAM_SHA256=ad11060410c64f04c8412d7dc99272322f7a24e45417d4ef2644b26c64ae97c9
 
 ENV INTERNAL_IP=127.0.0.1
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # Copy the requirements.txt file into the build context.
-# Make sure you have a valid requirements.txt in your build context.
 COPY requirements.txt /requirements.txt
 
 # Install system packages and clean up in a single layer to keep the size to a minimum.
@@ -18,17 +17,17 @@ RUN set -ex && \
     apt-get update && \
     apt-get install -yq --no-install-recommends \
         ca-certificates \
-        python3.8 \
-        python3.8-distutils \
+        python3.10 \
+        python3.10-distutils \
         net-tools \
-        libpython3.8 \
+        libpython3.10 \
         wget \
         libsqlite3-dev \
         build-essential \
         libxml2-dev \
         libxslt1-dev && \
     wget https://bootstrap.pypa.io/get-pip.py && \
-    python3.8 get-pip.py && \
+    python3.10 get-pip.py && \
     pip install --no-cache-dir -r /requirements.txt && \
     pip install lxml apsw PyNaCl && \
     apt-get clean && \
