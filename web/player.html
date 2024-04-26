@@ -188,25 +188,14 @@
 <div id="linkMD">
     <p>
         @ <a
-            href="https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d" target="_blank">https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan
-        -d</a>
+            href="https://hackmd.io/@plan/rJZTYtPZA" target="_blank">https://hackmd.io/@plan/rJZTYtPZA</a>
     </p>
 </div>
 <div id="links-list"></div>
 <script>
-    const BASE_STREAM_URL = "http://127.0.0.1:6878/ace/manifest.m3u8?id=";
+    const BASE_STREAM_URL = `http://127.0.0.1:6878/ace/manifest.m3u8?transcode_audio=1&id=`;
     const ACESTREAM_PREFIX = "acestream://";
     const player = videojs("video");
-
-    // Initial video loading
-    function initialLoad(playerId) {
-        document.title += `[${playerId.substr(0, 7)}]`;
-        player.src({
-            src: BASE_STREAM_URL + playerId,
-            type: "application/x-mpegURL",
-        });
-        player.play();
-    }
 
     // Load AceStream stream
     function loadAceStream(link) {
@@ -239,8 +228,6 @@
         loadButton.innerText = lang === 'es' ? 'Cargar' : 'Load';
     }
 
-    initialLoad("{player_id}");
-
     document.getElementById('toggle-view').addEventListener('click', toggleAcestreamInput);
 
     document.getElementById('load-button').addEventListener('click', function () {
@@ -248,6 +235,7 @@
         loadAceStream(acestreamLink);
     });
 
+    /*** SCRAPPING LINKS ***/
     // Handle fetched content
     fetch('https://corsproxy.io/?https://hackmd.io/@67QuUe0VRy-nPCNoJwtsgQ/plan-d')
         .then(response => response.text())
