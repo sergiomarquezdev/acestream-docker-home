@@ -2,7 +2,7 @@
 
 [Read documentation in English](README.md)
 
-Este proyecto facilita el despliegue de Acestream en un contenedor Docker, utilizando Ubuntu 18.04 (Bionic Beaver) para
+Este proyecto facilita el despliegue de Acestream en un contenedor Docker, utilizando Ubuntu 22.04 y Python 3.10 para
 garantizar la compatibilidad con la versión de Acestream empleada.
 
 Acestream es una plataforma popular para streaming en vivo que permite a los usuarios compartir y ver contenido de video
