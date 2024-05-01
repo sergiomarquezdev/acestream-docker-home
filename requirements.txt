@@ -1,3 +1,0 @@
-requests
-pycryptodome
-isodate

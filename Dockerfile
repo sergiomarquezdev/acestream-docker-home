@@ -10,7 +10,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # Copy the requirements.txt file into the build context.
-COPY requirements.txt /requirements.txt
+COPY config/requirements.txt /requirements.txt
 
 # Install system packages and clean up in a single layer to keep the size to a minimum.
 RUN set -ex && \
@@ -29,7 +29,6 @@ RUN set -ex && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3.10 get-pip.py && \
     pip install --no-cache-dir -r /requirements.txt && \
-    pip install lxml apsw PyNaCl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/* && \
     rm /requirements.txt get-pip.py
@@ -49,11 +48,11 @@ COPY web/player.html /opt/acestream/data/webui/html/player.html
 COPY config/acestream.conf /opt/acestream/acestream.conf
 
 # Entry point for the container.
-COPY entrypoint.sh /entrypoint.sh
+COPY config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
 
 # Expose necessary ports.
 EXPOSE 6878
 EXPOSE 8621
+
+ENTRYPOINT ["/entrypoint.sh"]

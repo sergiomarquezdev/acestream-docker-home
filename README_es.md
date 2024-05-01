@@ -2,121 +2,80 @@
 
 [Read documentation in English](README.md)
 
-Este proyecto facilita el despliegue de Acestream en un contenedor Docker, utilizando Ubuntu 22.04 y Python 3.10 para
-garantizar la compatibilidad con la versión de Acestream empleada.
+Este proyecto despliega Acestream dentro de un contenedor Docker usando Ubuntu 22.04 y Python 3.10 para garantizar la
+compatibilidad.
 
-Acestream es una plataforma popular para streaming en vivo que permite a los usuarios compartir y ver contenido de video
-a través de redes peer-to-peer. Utilizar Acestream en un contenedor Docker ofrece una manera eficiente y aislada de
-ejecutar Acestream, facilitando su instalación y configuración.
+Acestream es una plataforma para streaming en vivo a través de redes peer-to-peer. Usar Docker para Acestream simplifica
+su configuración y proporciona entornos aislados.
 
 ## Requisitos Previos
 
-Antes de comenzar, necesitarás tener Docker instalado y en ejecución en tu máquina. Esta guía asume que tienes una
-comprensión básica de los contenedores Docker y el ecosistema de Docker.
+1. **Instalación de Docker**: Asegúrate de que Docker Desktop esté instalado en tu sistema.
+   - [Página de productos de Docker](https://www.docker.com/products/docker-desktop)
+   - [Documentación Oficial](https://docs.docker.com/get-docker/)
 
-Para instalar Docker, sigue las instrucciones en
-la [documentación oficial de Docker](https://docs.docker.com/get-docker/) o visita
-la [página de productos de Docker](https://www.docker.com/products/docker-desktop) para descargar la versión adecuada
-para tu sistema operativo.
+## Instalación Automática y Ejecución con `SetupAcestream.bat` (Windows)
 
-Para asegurarte de que Docker está instalado correctamente y listo para usar, ejecuta:
+1. **Descripción del Script**: El script `SetupAcestream.bat` automatiza:
+   - Instalación de Docker (si es necesario)
+   - Descarga de la imagen de Docker
+   - Configuración del contenedor (puerto 6878 expuesto para acceso a la red)
 
-```bash
-docker --version
-```
+2. **Uso**: Descarga y ejecuta el [SetupAcestream.bat](https://github.com/marquezpsergio/acestream-docker/releases) como
+   Administrador.
 
-## Instalación y Ejecución Automática con Script `SetupAcestream.bat` (Windows)
+> **Nota:** Esto garantiza la versión más reciente de la imagen Docker de Acestream y el manejo del contenedor.
 
-Hemos proporcionado un script `.bat` denominado `SetupAcestream.bat` para simplificar todo el proceso de instalación,
-configuración y ejecución de Acestream en contenedores Docker para usuarios de Windows. El script automatiza varios
-pasos, incluyendo:
+## Construir la Imagen
 
-1. Verificación e instalación de Docker si es necesario.
-2. Descarga de la última imagen de Docker de `smarquezp/docker-acestream-ubuntu-home` desde Docker Hub.
-3. Ejecución del contenedor, exponiendo el puerto 6878, permitiendo el acceso al servicio Acestream desde cualquier
-   dispositivo dentro de tu red local.
-
-### Cómo Usar el Script `SetupAcestream.bat`
-
-Simplemente descarga el archivo [SetupAcestream.bat](https://github.com/marquezpsergio/acestream-docker/releases) y
-ejecútalo como Administrador. Este script prepara todo lo necesario para ejecutar Acestream en Docker y abre
-automáticamente la interfaz web donde podrás cargar los enlaces de Acestream directamente.
-
-> **Nota:** Este proceso asegura que estés utilizando siempre la versión más reciente de la imagen de Docker de
-> Acestream y te permite gestionar el contenedor de manera eficiente.
-
-## Construcción de la Imagen
-
-Este proyecto utiliza la imagen base **ubuntu:bionic** y es compatible con la versión de Acestream *
-*acestream_3.1.74_ubuntu_18.04_x86_64.tar.gz**.
-
-Para construir tu propia imagen Docker a partir de este Dockerfile, ejecuta el siguiente comando en la terminal,
-asegurándote de estar en el mismo directorio que el Dockerfile:
+Este proyecto usa la imagen base **ubuntu:22.04**. Debes clonar el proyecto completo primero.
+Después, para construir tu imagen utiliza:
 
 ```bash
-docker build --no-cache -t docker-acestream-ubuntu-home .
+docker build --no-cache -t docker-acestream .
 ```
 
-Si necesitas utilizar una versión diferente de Acestream y su hash SHA256, puedes especificarlos al construir la imagen
-con los siguientes argumentos:
+## Ejecutar el Contenedor
+
+Para iniciar un contenedor y ejecutar Acestream:
 
 ```bash
-docker build --no-cache --build-arg ACESTREAM_VERSION=tu_version_acestream --build-arg ACESTREAM_SHA256=tu_hash_sha256 -t docker-acestream-ubuntu-home .
+docker run --name docker-acestream -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped docker-acestream
 ```
 
-## Ejecución del Contenedor
+## Docker Compose
 
-Con la imagen Docker construida, puedes iniciar un contenedor para ejecutar Acestream de la siguiente manera. Puedes
-indicar también la IP que quieras en el comando.
+1. **Iniciar el Contenedor**: Usa `docker-compose` para iniciar el contenedor:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Actualizar la Imagen**: Para obtener la última versión de la imagen:
+
+   ```bash
+   docker-compose pull && docker-compose up -d
+   ```
+
+## Acceder a la Interfaz Web
+
+Accede a Acestream a través de la interfaz web en `http://localhost:6878/webui/player/`. Carga enlaces de Acestream en
+el campo superior izquierdo.
+
+## Verificar la Salud del Contenedor
+
+Verifica el estado de salud:
 
 ```bash
-docker run --name acestream -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped 
-docker-acestream-ubuntu-home
+docker inspect --format='{{json .State.Health}}' docker-acestream
 ```
 
-## Ejecución del Contenedor con Docker Compose
-
-Descarga o copia el contenido del fichero `docker-compose.yml`.
-
-Desde la misma ruta donde se encuentra el archivo, ejecuta:
-
-```bash
-docker-compose up -d
-```
-
-### Actualización con Docker Compose
-
-Para asegurarte de que estás utilizando la última versión de la imagen, ejecuta:
-
-```bash
-docker-compose pull && docker-compose up -d
-```
-
-## Acceso a la Interfaz Web
-
-Una vez que el contenedor esté en ejecución y sin errores en los registros, puedes acceder a la interfaz web de
-Acestream utilizando un navegador web y dirigiéndote a `http://localhost:6878/webui/player/`.
-Aquí podrás cargar los enlaces de Acestream directamente en el campo situado en la parte superior izquierda de la
-pantalla. Además, podrás ocultar o mostrar este campo utilizando el icono que aparece a su izquierda.
-
-## Verificación del Estado de Salud del Contenedor
-
-Puedes verificar el estado de salud del contenedor con el siguiente comando:
-
-```bash
-docker inspect --format='{{json .State.Health}}' acestream
-```
-
-El estado de salud también se puede verificar desde la propia interfaz web, a través del
-enlace: `http://localhost:6878/webui/api/service?method=get_version`.
+O a través de la interfaz web: `http://localhost:6878/webui/api/service?method=get_version`.
 
 ## Contribuciones
 
-Tu participación en el proyecto es altamente apreciada. Si tienes sugerencias de mejoras o correcciones y deseas
-contribuir, sigue los pasos estándar de GitHub para colaborar en proyectos.
+Agradecemos las contribuciones. Haz un fork, realiza cambios y envía un pull request para revisión.
 
 ## Licencia
 
-Este proyecto se distribuye bajo la Licencia MIT, lo que significa que puedes modificarlo, distribuirlo o utilizarlo
-como quieras bajo los términos de esta licencia. Para más información, consulta el archivo [LICENSE](LICENSE) incluido
-en este repositorio.
+Este proyecto está bajo la licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
