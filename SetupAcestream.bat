@@ -6,7 +6,7 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 :: -------------------------
 set "IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest"
 set "INTERNAL_IP=127.0.0.1"
-set "PORT=6878"
+set "PORT=8080"
 set "SERVICE_NAME=acestream"
 set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
@@ -16,14 +16,9 @@ set "PREFIX=acestream://"
 :: -------------------------
 :dockerCheck
 echo Checking Docker...
-docker --version >nul 2>&1 || (
-    echo ERROR: Docker not found. Please install Docker to continue.
+docker --version >nul 2>&1 && docker info >nul 2>&1 || (
+    echo ERROR: Docker not found or not active. Please install and start Docker to continue.
     start https://www.docker.com/get-started/
-    pause
-    goto dockerCheck
-)
-docker info >nul 2>&1 || (
-    echo ERROR: Docker is not active. Please start Docker and try again.
     pause
     goto dockerCheck
 )
@@ -76,7 +71,9 @@ echo Creating or updating the docker-compose.yml file...
     echo     container_name: acestream
     echo     restart: unless-stopped
     echo     ports:
-    echo       - %PORT%:%PORT%
+    echo       - 8080:8080
+    echo       - 6878:6878
+    echo       - 8621:8621
     echo     environment:
     echo       - INTERNAL_IP=%INTERNAL_IP%
     echo networks:

@@ -25,7 +25,8 @@ RUN set -ex && \
         libsqlite3-dev \
         build-essential \
         libxml2-dev \
-        libxslt1-dev && \
+        libxslt1-dev \
+        nginx && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python3.10 get-pip.py && \
     pip install --no-cache-dir -r /requirements.txt && \
@@ -47,6 +48,9 @@ COPY web/player.html /opt/acestream/data/webui/html/player.html
 # Copy Acestream configuration.
 COPY config/acestream.conf /opt/acestream/acestream.conf
 
+# Copy Nginx configuration.
+COPY config/nginx.conf /etc/nginx/sites-available/default
+
 # Entry point for the container.
 COPY config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
@@ -54,5 +58,6 @@ RUN chmod +x /entrypoint.sh
 # Expose necessary ports.
 EXPOSE 6878
 EXPOSE 8621
+EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
