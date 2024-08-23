@@ -115,6 +115,11 @@
         const ACESTREAM_PREFIX = "acestream://";
         const player = videojs("video");
 
+        // Función reutilizable para obtener elementos por ID
+        function getElement(id) {
+            return document.getElementById(id);
+        }
+
         // Load AceStream stream
         function loadAceStream(link) {
             const playerId = link.replace(ACESTREAM_PREFIX, '');
@@ -132,26 +137,22 @@
 
         // Show/hide Acestream input
         function toggleAcestreamInput() {
-            const inputDiv = document.getElementById('acestream-link');
-            const icon = document.getElementById('toggle-icon');
+            const inputDiv = getElement('acestream-link');
+            const icon = getElement('toggle-icon');
             inputDiv.style.display = inputDiv.style.display === 'none' ? 'flex' : 'none';
             icon.className = inputDiv.style.display === 'none' ? 'fas fa-eye' : 'fas fa-eye-slash';
         }
 
         // Change page language
         function changeLanguage(lang) {
-            const acestreamLinkInput = document.getElementById('acestream-link-input');
-            acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' :
-                'Insert Acestream link here';
-            const loadButton = document.getElementById('load-button');
-            loadButton.innerText = lang === 'es' ? 'Cargar' : 'Load';
+            const acestreamLinkInput = getElement('acestream-link-input');
+            acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' : 'Insert Acestream link here';
+            getElement('load-button').innerText = lang === 'es' ? 'Cargar' : 'Load';
         }
 
-        document.getElementById('toggle-view').addEventListener('click', toggleAcestreamInput);
-
-        document.getElementById('load-button').addEventListener('click', function () {
-            const acestreamLink = document.getElementById('acestream-link-input').value;
-            loadAceStream(acestreamLink);
+        getElement('toggle-view').addEventListener('click', toggleAcestreamInput);
+        getElement('load-button').addEventListener('click', function () {
+            loadAceStream(getElement('acestream-link-input').value);
         });
     </script>
 </body>

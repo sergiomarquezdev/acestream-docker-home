@@ -53,6 +53,5 @@ RUN chmod +x /entrypoint.sh
 
 # Expose necessary ports.
 EXPOSE 6878
-EXPOSE 8621
 
 ENTRYPOINT ["/entrypoint.sh"]

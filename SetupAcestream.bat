@@ -6,8 +6,8 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 :: -------------------------
 set "IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest"
 set "INTERNAL_IP=127.0.0.1"
-set "PORT=6878"
-set "SERVICE_NAME=acestream"
+set "PORT_BASE=6878"
+set "SERVICE_NAME_BASE=acestream_"
 set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
 
@@ -56,24 +56,44 @@ if not "%USER_IP%"=="" set "INTERNAL_IP=%USER_IP%"
 echo Using IP: %INTERNAL_IP%
 
 :: -------------------------
+:: Dynamic port and service name assignment
+:: -------------------------
+set "PORT=%PORT_BASE%"
+set "SERVICE_NAME=%SERVICE_NAME_BASE%%PORT%"
+
+:checkPort
+set CONTAINER_ID=
+for /f "tokens=*" %%i in ('docker ps -q --filter "name=!SERVICE_NAME!"') do set CONTAINER_ID=%%i
+
+if not defined CONTAINER_ID (
+    echo Using port !PORT! and service name !SERVICE_NAME!.
+) else (
+    echo Port !PORT! is already in use. Trying the next port...
+    set /a "PORT+=1"
+    set "SERVICE_NAME=%SERVICE_NAME_BASE%!PORT!"
+    echo DEBUG: Now using port !PORT! and service name !SERVICE_NAME!.
+    goto checkPort
+)
+
+:: -------------------------
 :: Creation or update of the docker-compose.yml file.
 :: -------------------------
 :startDocker
-docker stop %SERVICE_NAME% >NUL 2>&1
-docker rm %SERVICE_NAME% -f >NUL 2>&1
+docker stop !SERVICE_NAME! >NUL 2>&1
+docker rm !SERVICE_NAME! -f >NUL 2>&1
 echo.
 echo Creating or updating the docker-compose.yml file...
 >%DOCKER_COMPOSE_FILE% (
     echo version: '3.8'
     echo services:
-    echo   acestream:
-    echo     image: %IMAGE_NAME%
-    echo     container_name: acestream
+    echo   !SERVICE_NAME!:
+    echo     image: !IMAGE_NAME!
+    echo     container_name: !SERVICE_NAME!
     echo     restart: unless-stopped
     echo     ports:
-    echo       - %PORT%:%PORT%
+    echo       - !PORT!:!PORT_BASE!
     echo     environment:
-    echo       - INTERNAL_IP=%INTERNAL_IP%
+    echo       - INTERNAL_IP=!INTERNAL_IP!
     echo networks:
     echo   default:
     echo     driver: bridge
@@ -83,18 +103,18 @@ echo docker-compose.yml file created or updated successfully.
 
 :: Pull the latest image before starting the service
 echo Pulling the latest Docker image...
-docker-compose -f %DOCKER_COMPOSE_FILE% pull %SERVICE_NAME%
+docker-compose -f !DOCKER_COMPOSE_FILE! pull !SERVICE_NAME!
 
 :: Attempt to start the service and handle errors in case of failure.
 echo Starting the Acestream service...
-docker-compose -f %DOCKER_COMPOSE_FILE% up -d %SERVICE_NAME% || (
+docker-compose -f !DOCKER_COMPOSE_FILE! up -d !SERVICE_NAME! || (
     echo ERROR: Could not start the Acestream service. Ensure the 'docker-compose.yml' file is correctly configured.
     pause
     goto startDocker
 )
 echo Acestream service started successfully.
 
-echo Acestream container successfully launched on port: %PORT%
+echo Acestream container successfully launched on port: !PORT!
 echo.
 
 :: -------------------------
@@ -105,7 +125,7 @@ echo ----------------------------------------
 echo The browser will open in 5 seconds to start playing the content.
 timeout /t 5 /nobreak >nul
 echo Preparing the Acestream stream playback...
-start http://%INTERNAL_IP%:%PORT%/webui/player/
+start http://!INTERNAL_IP!:!PORT!/webui/player/
 
 :: -------------------------
 :: Farewell message and script termination.
