@@ -8,6 +8,8 @@ services:
       - 6878:6878
     environment:
       - INTERNAL_IP=127.0.0.1
+      - HTTP_PORT=6878
+      - HTTPS_PORT=6879
 networks:
   default:
     driver: bridge
