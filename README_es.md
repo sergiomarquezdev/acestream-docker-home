@@ -40,7 +40,7 @@ docker build --no-cache -t docker-acestream .
 Para iniciar un contenedor y ejecutar Acestream:
 
 ```bash
-docker run --name docker-acestream -d -p 8080:8080 -p 6878:6878 -p 8621:8621 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped docker-acestream
+docker run --name docker-acestream -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped docker-acestream
 ```
 
 ## Docker Compose
@@ -59,7 +59,7 @@ docker run --name docker-acestream -d -p 8080:8080 -p 6878:6878 -p 8621:8621 -e 
 
 ## Acceder a la Interfaz Web
 
-Accede a Acestream a través de la interfaz web en `http://localhost:8080/webui/player/`. Carga enlaces de Acestream en
+Accede a Acestream a través de la interfaz web en `http://localhost:6878/webui/player/`. Carga enlaces de Acestream en
 el campo superior izquierdo.
 
 ## Verificar la Salud del Contenedor
@@ -70,7 +70,7 @@ Verifica el estado de salud:
 docker inspect --format='{{json .State.Health}}' docker-acestream
 ```
 
-O a través de la interfaz web: `http://localhost:8080/webui/api/service?method=get_version`.
+O a través de la interfaz web: `http://localhost:6878/webui/api/service?method=get_version`.
 
 ## Contribuciones
 

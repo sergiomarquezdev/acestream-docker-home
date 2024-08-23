@@ -6,7 +6,7 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 :: -------------------------
 set "IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest"
 set "INTERNAL_IP=127.0.0.1"
-set "PORT=8080"
+set "PORT=6878"
 set "SERVICE_NAME=acestream"
 set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
@@ -71,9 +71,7 @@ echo Creating or updating the docker-compose.yml file...
     echo     container_name: acestream
     echo     restart: unless-stopped
     echo     ports:
-    echo       - 8080:8080
-    echo       - 6878:6878
-    echo       - 8621:8621
+    echo       - %PORT%:%PORT%
     echo     environment:
     echo       - INTERNAL_IP=%INTERNAL_IP%
     echo networks:

@@ -5,9 +5,7 @@ services:
     container_name: acestream
     restart: unless-stopped
     ports:
-      - 8080:8080
       - 6878:6878
-      - 8621:8621
     environment:
       - INTERNAL_IP=127.0.0.1
 networks:
