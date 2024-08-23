@@ -10,6 +10,7 @@ set "PORT_BASE=6878"
 set "SERVICE_NAME_BASE=acestream_"
 set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
+set "HTTP_PORT_BASE=6878"
 
 :: -------------------------
 :: Checking for Docker installation and operational status.
@@ -60,18 +61,20 @@ echo Using IP: %INTERNAL_IP%
 :: -------------------------
 set "PORT=%PORT_BASE%"
 set "SERVICE_NAME=%SERVICE_NAME_BASE%%PORT%"
+set "HTTP_PORT=%HTTP_PORT_BASE%"
 
 :checkPort
 set CONTAINER_ID=
 for /f "tokens=*" %%i in ('docker ps -q --filter "name=!SERVICE_NAME!"') do set CONTAINER_ID=%%i
 
 if not defined CONTAINER_ID (
-    echo Using port !PORT! and service name !SERVICE_NAME!.
+    echo Using port !PORT!, HTTP port !HTTP_PORT!, and service name !SERVICE_NAME!.
 ) else (
     echo Port !PORT! is already in use. Trying the next port...
     set /a "PORT+=1"
+    set /a "HTTP_PORT+=1"
     set "SERVICE_NAME=%SERVICE_NAME_BASE%!PORT!"
-    echo DEBUG: Now using port !PORT! and service name !SERVICE_NAME!.
+    echo DEBUG: Now using port !PORT!, HTTP port !HTTP_PORT!, and service name !SERVICE_NAME!.
     goto checkPort
 )
 
@@ -91,9 +94,10 @@ echo Creating or updating the docker-compose.yml file...
     echo     container_name: !SERVICE_NAME!
     echo     restart: unless-stopped
     echo     ports:
-    echo       - !PORT!:!PORT_BASE!
+    echo       - !PORT!:!PORT!
     echo     environment:
     echo       - INTERNAL_IP=!INTERNAL_IP!
+    echo       - HTTP_PORT=!HTTP_PORT!
     echo networks:
     echo   default:
     echo     driver: bridge
@@ -114,7 +118,7 @@ docker-compose -f !DOCKER_COMPOSE_FILE! up -d !SERVICE_NAME! || (
 )
 echo Acestream service started successfully.
 
-echo Acestream container successfully launched on port: !PORT!
+echo Acestream container successfully launched on port: !PORT! using internal HTTP port: !HTTP_PORT!.
 echo.
 
 :: -------------------------

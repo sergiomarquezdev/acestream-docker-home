@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Replace 127.0.0.1 with the internal IP in player.html
-sed -i "s/127.0.0.1/${INTERNAL_IP}/g" /opt/acestream/data/webui/html/player.html
+# Replace 127.0.0.1 with the internal IP and update the port in player.html
+sed -i "s|http://127.0.0.1:6878/|http://${INTERNAL_IP}:${HTTP_PORT}/|g" /opt/acestream/data/webui/html/player.html
 
-# Start the Acestream engine
-exec /opt/acestream/start-engine "@/opt/acestream/acestream.conf"
+# Start the Acestream engine with the specified HTTP port
+exec /opt/acestream/start-engine --http-port ${HTTP_PORT} "@/opt/acestream/acestream.conf"

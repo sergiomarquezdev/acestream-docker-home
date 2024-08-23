@@ -38,8 +38,7 @@ RUN mkdir -p /opt/acestream && \
     wget --no-verbose --output-document acestream.tgz "${ACESTREAM_VERSION}" && \
     echo "${ACESTREAM_SHA256} acestream.tgz" | sha256sum --check && \
     tar --extract --gzip --directory /opt/acestream --file acestream.tgz && \
-    rm acestream.tgz && \
-    /opt/acestream/start-engine --version
+    rm acestream.tgz
 
 # Overwrite the Ace Stream web player.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
@@ -50,8 +49,5 @@ COPY config/acestream.conf /opt/acestream/acestream.conf
 # Entry point for the container.
 COPY config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-# Expose necessary ports.
-EXPOSE 6878
 
 ENTRYPOINT ["/entrypoint.sh"]
