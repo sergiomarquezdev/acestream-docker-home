@@ -18,71 +18,111 @@
             width: 100%;
             box-sizing: border-box;
             min-height: 40vw;
+            font-family: Arial, sans-serif;
         }
 
         .video-js .vjs-big-play-button {
             top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
+            border: none;
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
         #acestream-link {
             display: flex;
             align-items: center;
-            gap: 1px;
+            gap: 5px;
             position: absolute;
-            top: 5px;
-            left: 33px;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 100;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 2px;
-            border-radius: 5px;
-        }
-
-        #acestream-link-input {
-            border: 1px solid #ccc;
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.9);
             padding: 5px 10px;
-            width: 300px;
-            margin-left: 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        #acestream-link button {
+        #toggle-view {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 101;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s;
+        }
+
+        #toggle-view:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        #toggle-icon {
+            color: #333;
+            font-size: 18px;
+        }
+
+        #doc {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #doc p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        #doc a {
+            color: #337ab7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        #doc a:hover {
+            color: #23527c;
+            text-decoration: underline;
+        }
+
+        #doc strong {
+            font-weight: bold;
+            color: #222;
+        }
+
+        .lang-button {
+            background-color: transparent;
             border: none;
             cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .lang-button:hover {
+            transform: scale(1.2);
+            transition-duration: 0.2s;
         }
 
         #load-button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 5px 15px;
             margin-left: 5px;
             border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         #load-button:hover {
             background-color: #0056b3;
-        }
-
-        .lang-button {
-            background-color: transparent;
-        }
-
-        .lang-button:hover {
-            transform: scale(1.1);
-            transition-duration: 1ms;
-        }
-
-        #toggle-view {
-            position: absolute;
-            top: 5px;
-            left: 1px;
-            z-index: 101;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 5px;
-            border-radius: 50%;
         }
     </style>
 </head>
@@ -91,8 +131,7 @@
 <div id="toggle-view">
     <i class="fas fa-eye-slash" id="toggle-icon"></i>
 </div>
-<video id="video" class="video-js vjs-default-skin" controls preload="auto" data-setup="{}" width="100%"
-       height="100%">
+<video id="video" class="video-js vjs-default-skin" controls preload="none" data-setup="{}" width="100%" height="100%">
     <p class="vjs-no-js"> To view this video please enable JavaScript, and consider upgrading to a web browser that
         <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
     </p>
@@ -121,6 +160,7 @@
 
     // Load AceStream stream
     function loadAceStream(link) {
+        window.scrollTo({top: 0, behavior: 'smooth'});
         const playerId = link.replace(ACESTREAM_PREFIX, '');
         if (playerId.length > 1) {
             getElement('acestream-link-input').value = link;
@@ -156,144 +196,311 @@
     });
 </script>
 
-<div id="doc" class="markdown-body container-fluid">
-    <p><strong>Movistar SuperCopa de España</strong> : <a href="javascript:void(0);"
-                                                          onclick="loadAceStream('acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d')">acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://d6cdd724a97fcf851e7ef641c28d6beb8663496e')">acestream://d6cdd724a97fcf851e7ef641c28d6beb8663496e</a>
+<div id="doc">
+    <p>
+        <strong>Movistar SuperCopa de España</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://d6cdd724a97fcf851e7ef641c28d6beb8663496e')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN LaLiga 1080p</strong> : <a href="javascript:void(0);"
-                                               onclick="loadAceStream('acestream://1960a9be8ae9e8c755330218eac4c5805466290a')">acestream://1960a9be8ae9e8c755330218eac4c5805466290a</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://75251ba975132ec9a202806ba5bf606e87280c96')">acestream://75251ba975132ec9a202806ba5bf606e87280c96</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://95b2238dec35cf00dfdf8fba18e9920bc2c56256')">acestream://95b2238dec35cf00dfdf8fba18e9920bc2c56256</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://a3bca895c58d3fc7d5e4259d3d5e3cf0291d1914')">acestream://a3bca895c58d3fc7d5e4259d3d5e3cf0291d1914</a>
+    <p>
+        <strong>DAZN LaLiga 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://1960a9be8ae9e8c755330218eac4c5805466290a')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://75251ba975132ec9a202806ba5bf606e87280c96')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://95b2238dec35cf00dfdf8fba18e9920bc2c56256')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://a3bca895c58d3fc7d5e4259d3d5e3cf0291d1914')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN LaLiga 2</strong> : <a href="javascript:void(0);"
-                                           onclick="loadAceStream('acestream://e33e666c393ef04ebe99a9b92135d2e0b48c4d10')">acestream://e33e666c393ef04ebe99a9b92135d2e0b48c4d10</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://0950c37fe1ea817fc561c611ae943d58505f7a79')">acestream://0950c37fe1ea817fc561c611ae943d58505f7a79</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://93d663e92a93845b11c9831885646fa39ba1ed66')">acestream://93d663e92a93845b11c9831885646fa39ba1ed66</a>
+    <p>
+        <strong>DAZN LaLiga 2</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://e33e666c393ef04ebe99a9b92135d2e0b48c4d10')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://0950c37fe1ea817fc561c611ae943d58505f7a79')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://93d663e92a93845b11c9831885646fa39ba1ed66')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN LaLiga 3</strong> : <a href="javascript:void(0);"
-                                           onclick="loadAceStream('acestream://8c71f0e0a5476e10950fc827f9d2a507340aba74')">acestream://8c71f0e0a5476e10950fc827f9d2a507340aba74</a>
+    <p>
+        <strong>DAZN LaLiga 3</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://8c71f0e0a5476e10950fc827f9d2a507340aba74')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN 1 1080p</strong> : <a href="javascript:void(0);"
-                                          onclick="loadAceStream('acestream://8ca07071b39185431f8e940ec98d1add9e561639')">acestream://8ca07071b39185431f8e940ec98d1add9e561639</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://eaff9293c76a324c750ef5094c2a4e2c96518d1f')">acestream://eaff9293c76a324c750ef5094c2a4e2c96518d1f</a>
+    <p>
+        <strong>DAZN 1 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://8ca07071b39185431f8e940ec98d1add9e561639')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://eaff9293c76a324c750ef5094c2a4e2c96518d1f')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN 2 1080p</strong> : <a href="javascript:void(0);"
-                                          onclick="loadAceStream('acestream://60dbeeb299ec04bf02bc7426d827547599d3d9fc')">acestream://60dbeeb299ec04bf02bc7426d827547599d3d9fc</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://7aa402bab9fff43258fbcf401881a39475f30aaf')">acestream://7aa402bab9fff43258fbcf401881a39475f30aaf</a>
+    <p>
+        <strong>DAZN 2 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://60dbeeb299ec04bf02bc7426d827547599d3d9fc')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://7aa402bab9fff43258fbcf401881a39475f30aaf')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN 3 1080p</strong> : <a href="javascript:void(0);"
-                                          onclick="loadAceStream('acestream://a8ffddef56f082d4bb5c0be0d3d2fdd8c16dbd97')">acestream://a8ffddef56f082d4bb5c0be0d3d2fdd8c16dbd97</a>
+    <p>
+        <strong>DAZN 3 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://a8ffddef56f082d4bb5c0be0d3d2fdd8c16dbd97')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN 4 1080p</strong> : <a href="javascript:void(0);"
-                                          onclick="loadAceStream('acestream://2fcdf7a19c0858f686efdfabd3c8c2b92bf6bcfd')">acestream://2fcdf7a19c0858f686efdfabd3c8c2b92bf6bcfd</a>
+    <p>
+        <strong>DAZN 4 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://2fcdf7a19c0858f686efdfabd3c8c2b92bf6bcfd')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN Liga Fem-1</strong> : <a href="javascript:void(0);"
-                                             onclick="loadAceStream('acestream://600222a4f98df80a2c0df2d60cb5ff3df9620710')">acestream://600222a4f98df80a2c0df2d60cb5ff3df9620710</a>
+    <p>
+        <strong>DAZN F1 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://5789ca155323664edd293b848606688edf803f4d')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://9dad717d99b29a05672166258a77c25b57713dd5')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://e1fcad9de0c782c157fde6377805c58297ab65c2')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN Liga Fem-2</strong> : <a href="javascript:void(0);"
-                                             onclick="loadAceStream('acestream://d6cdd724a97fcf851e7ef641c28d6beb8663496e')">acestream://d6cdd724a97fcf851e7ef641c28d6beb8663496e</a>
+    <p>
+        <strong>DAZN F1 Multicam 1080p</strong>
     </p>
-    <p><strong>DAZN Liga Fem-3</strong> : <a href="javascript:void(0);"
-                                             onclick="loadAceStream('acestream://162942adc047d0f78eac056effbe5bbec54a5e51')">acestream://162942adc047d0f78eac056effbe5bbec54a5e51</a>
+    <p>
+        <strong>F1 TV 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://8c92cfef8dd37e2dd2d3b8985b81cc7708e24d3c')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN Liga Fem-4</strong> : <a href="javascript:void(0);"
-                                             onclick="loadAceStream('acestream://e454681a152a86da504e63694f17f90d0586867d')">acestream://e454681a152a86da504e63694f17f90d0586867d</a>
+    <p>
+        <strong>LaLiga TV Bar 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://512aeadf50d91603d15b32f1e408166536ec4ac9')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong>
     </p>
-    <p><strong>DAZN F1 1080p</strong> : <a href="javascript:void(0);"
-                                           onclick="loadAceStream('acestream://5789ca155323664edd293b848606688edf803f4d')">acestream://5789ca155323664edd293b848606688edf803f4d</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://9dad717d99b29a05672166258a77c25b57713dd5')">acestream://9dad717d99b29a05672166258a77c25b57713dd5</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://e1fcad9de0c782c157fde6377805c58297ab65c2')">acestream://e1fcad9de0c782c157fde6377805c58297ab65c2</a>
+    <p>
+        <strong>M. LaLiga TV 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://1969c27658d4c8333ab2c0670802546121a774a5')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://7d8c87e057be98f00f22e23b23fbf08999e4b02f')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://f031f5728b32f6089dda28edebe990cf198108d8')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>DAZN F1 Multicam 1080p</strong></p>
-    <p><strong>RFEF</strong> : <a href="javascript:void(0);"
-                                  onclick="loadAceStream('acestream://ee38ea1806129de000bd7925a5d52554d70bb560')">acestream://ee38ea1806129de000bd7925a5d52554d70bb560</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://76f48ddb3066dd67c1f73a1d847a392c8890032d')">acestream://76f48ddb3066dd67c1f73a1d847a392c8890032d</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://4340f8b4726bedadbc2bd0d137cf3b4f6afa40ef')">acestream://4340f8b4726bedadbc2bd0d137cf3b4f6afa40ef</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://6af6ef2a1e14b58801a1176f88ea5e323fb0ac20')">acestream://6af6ef2a1e14b58801a1176f88ea5e323fb0ac20</a>
+    <p>
+        <strong>M. LaLiga 2 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://26029f72a4ca831d09deefe89534818db1d105bc')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://80126b240f3e4e004754fd8f8103e857ab2556a0')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>F1 TV 1080p</strong> : <a href="javascript:void(0);"
-                                         onclick="loadAceStream('acestream://8c92cfef8dd37e2dd2d3b8985b81cc7708e24d3c')">acestream://8c92cfef8dd37e2dd2d3b8985b81cc7708e24d3c</a>
+    <p>
+        <strong>LaLiga Hypermotion 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://4c46585214b23b1d802ef2168060c7649a3894cf')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://06b367c22394a1358c9cefa0cb5d0b64b9b2b3f4')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>LaLiga TV Bar 1080p</strong> : <a href="javascript:void(0);"
-                                                 onclick="loadAceStream('acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280')">acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://512aeadf50d91603d15b32f1e408166536ec4ac9')">acestream://512aeadf50d91603d15b32f1e408166536ec4ac9</a>
-        / <strong>720p</strong></p>
-    <p><strong>M. LaLiga TV 1080p</strong> : <a href="javascript:void(0);"
-                                                onclick="loadAceStream('acestream://1969c27658d4c8333ab2c0670802546121a774a5')">acestream://1969c27658d4c8333ab2c0670802546121a774a5</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280')">acestream://aa82e7d4f03061f2144a2f4be22f2e2210d42280</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://7d8c87e057be98f00f22e23b23fbf08999e4b02f')">acestream://7d8c87e057be98f00f22e23b23fbf08999e4b02f</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://f031f5728b32f6089dda28edebe990cf198108d8')">acestream://f031f5728b32f6089dda28edebe990cf198108d8</a>
+    <p>
+        <strong>LaLiga Hypermotion 2 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://d81b4f2f3fde433539c097b2edc9b587ca47b087')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://2709d0ab86cb6ce7ba4d3ad188d7fa80668f2924')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M. LaLiga 2 1080p</strong> : <a href="javascript:void(0);"
-                                               onclick="loadAceStream('acestream://26029f72a4ca831d09deefe89534818db1d105bc')">acestream://26029f72a4ca831d09deefe89534818db1d105bc</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://80126b240f3e4e004754fd8f8103e857ab2556a0')">acestream://80126b240f3e4e004754fd8f8103e857ab2556a0</a>
+    <p>
+        <strong>LaLiga Hypermotion 3 1080p</strong>
     </p>
-    <p><strong>LaLiga Hypermotion 1080p</strong> : <a href="javascript:void(0);"
-                                                      onclick="loadAceStream('acestream://4c46585214b23b1d802ef2168060c7649a3894cf')">acestream://4c46585214b23b1d802ef2168060c7649a3894cf</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://06b367c22394a1358c9cefa0cb5d0b64b9b2b3f4')">acestream://06b367c22394a1358c9cefa0cb5d0b64b9b2b3f4</a>
+    <p>
+        <strong>M.#Vamos 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://859bb6295b8d0f224224d3063d9db7cdeca03122')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://3bba7c95857c2502c7e03ced1a6a9b00eb567fa0')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>LaLiga Hypermotion 2 1080p</strong> : <a href="javascript:void(0);"
-                                                        onclick="loadAceStream('acestream://d81b4f2f3fde433539c097b2edc9b587ca47b087')">acestream://d81b4f2f3fde433539c097b2edc9b587ca47b087</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://2709d0ab86cb6ce7ba4d3ad188d7fa80668f2924')">acestream://2709d0ab86cb6ce7ba4d3ad188d7fa80668f2924</a>
+    <p>
+        <strong>M.Ellas</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://71e9e4c66a271ff58beb76792e01eeb6a1dde746')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>LaLiga Hypermotion 3 1080p</strong></p>
-    <p><strong>M.#Vamos 1080p</strong> : <a href="javascript:void(0);"
-                                            onclick="loadAceStream('acestream://859bb6295b8d0f224224d3063d9db7cdeca03122')">acestream://859bb6295b8d0f224224d3063d9db7cdeca03122</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://3bba7c95857c2502c7e03ced1a6a9b00eb567fa0')">acestream://3bba7c95857c2502c7e03ced1a6a9b00eb567fa0</a>
+    <p>
+        <strong>Movistar Plus 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://5a236fbbe6e5bbfec03db548c244a7c858d675c0')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M.Ellas</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://71e9e4c66a271ff58beb76792e01eeb6a1dde746')">acestream://71e9e4c66a271ff58beb76792e01eeb6a1dde746</a>
+    <p>
+        <strong>M. Deportes 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://d00223931b1854163e24c5c22475015d7d45c112')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://e5fa927d9a017f4523fdb62774a0aec457985bfa')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>Movistar Plus 1080p</strong> : <a href="javascript:void(0);"
-                                                 onclick="loadAceStream('acestream://5a236fbbe6e5bbfec03db548c244a7c858d675c0')">acestream://5a236fbbe6e5bbfec03db548c244a7c858d675c0</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d')">acestream://8ba764f6a3bce6eae87ec71208fad1aa3a20528d</a>
+    <p>
+        <strong>M. Deportes 2 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://e6f06d697f66a8fa606c4d61236c24b0d604d917')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M. Deportes 1080p</strong> : <a href="javascript:void(0);"
-                                               onclick="loadAceStream('acestream://d00223931b1854163e24c5c22475015d7d45c112')">acestream://d00223931b1854163e24c5c22475015d7d45c112</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://e5fa927d9a017f4523fdb62774a0aec457985bfa')">acestream://e5fa927d9a017f4523fdb62774a0aec457985bfa</a>
+    <p>
+        <strong>M. Deportes 3 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://aee0a595220e0f1c2fee725fd1dbc602d7152a9a')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M. Deportes 2 1080p</strong> : <a href="javascript:void(0);"
-                                                 onclick="loadAceStream('acestream://e6f06d697f66a8fa606c4d61236c24b0d604d917')">acestream://e6f06d697f66a8fa606c4d61236c24b0d604d917</a>
+    <p>
+        <strong>M.L. Campeones 1080p MultiAudio</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://f096a64dd756a6d549aa7b12ee9acf7eee27e833')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://1d79a7543d691666135669f89f3541f54e2dd0a9')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://931b1984badcb821df7b47a66ac0835ac871b51c')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://e2e2aca792aae5da19995ac516b1d620531bd49c')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://6b56c1de436327b49e429a702e81e9269630e37a')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M. Deportes 3 1080p</strong> : <a href="javascript:void(0);"
-                                                 onclick="loadAceStream('acestream://aee0a595220e0f1c2fee725fd1dbc602d7152a9a')">acestream://aee0a595220e0f1c2fee725fd1dbc602d7152a9a</a>
+    <p>
+        <strong>M.L. Campeones 2 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://fc2fe31b0bce25e2dc7ab4d262bf645e2be5a393')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://6753492c1908274c268a1b28e2a054a0ff8f86f9')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
-    <p><strong>M.L. Campeones 1080p MultiAudio</strong> : <a href="javascript:void(0);"
-                                                             onclick="loadAceStream('acestream://f096a64dd756a6d549aa7b12ee9acf7eee27e833')">acestream://f096a64dd756a6d549aa7b12ee9acf7eee27e833</a>
-        / <a href="javascript:void(0);" onclick="loadAceStream('acestream://1d79a7543d691666135669f89f3541f54e2dd0a9')">acestream://1d79a7543d691666135669f89f3541f54e2dd0a9</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://931b1984badcb821df7b47a66ac0835ac871b51c')">acestream://931b1984badcb821df7b47a66ac0835ac871b51c</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://e2e2aca792aae5da19995ac516b1d620531bd49c')">acestream://e2e2aca792aae5da19995ac516b1d620531bd49c</a>
-        / <a href="javascript:void(0);"
-             onclick="loadAceStream('acestream://6b56c1de436327b49e429a702e81e9269630e37a')">acestream://6b56c1de436327b49e429a702e81e9269630e37a</a>
-    </p>
-    <p><strong>M.L. Campeones 2 1080p</strong> : <a href="javascript:void(0);"
-                                                    onclick="loadAceStream('acestream://fc2fe31b0bce25e2dc7ab4d262bf645e2be5a393')">acestream://fc2fe31b0bce25e2dc7ab4d262bf645e2be5a393</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://6753492c1908274c268a1b28e2a054a0ff8f86f9')">acestream://6753492c1908274c268a1b28e2a054a0ff8f86f9</a>
-    </p>
-    <p><strong>M.L. Campeones 3 1080p</strong> : <a href="javascript:void(0);"
-                                                    onclick="loadAceStream('acestream://ad372cba73aa0ece207a79532b3e30b731136bb2')">acestream://ad372cba73aa0ece207a79532b3e30b731136bb2</a>
-        / <strong>720p</strong> : <a href="javascript:void(0);"
-                                     onclick="loadAceStream('acestream://d59fe9978eed49f256b312a60671b5bce43d3f24')">acestream://d59fe9978eed49f256b312a60671b5bce43d3f24</a>
+    <p>
+        <strong>M.L. Campeones 3 1080p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://ad372cba73aa0ece207a79532b3e30b731136bb2')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
+        <strong>720p</strong> :
+        <a href="javascript:void(0);"
+           onclick="loadAceStream('acestream://d59fe9978eed49f256b312a60671b5bce43d3f24')">
+            <i class="fa-regular fa-circle-play"></i>
+        </a>
     </p>
 </div>
 

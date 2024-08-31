@@ -41,7 +41,7 @@ RUN mkdir -p /opt/acestream && \
     rm acestream.tgz \
 
 # Install Acestream from file. Actual (ACESTREAM_VERSION = acestream_3.2.3_ubuntu_22.04_x86_64_py3.10.tar.gz)
-# COPY acestream.tar.gz /opt/acestream/
+# COPY resources/acestream.tar.gz /opt/acestream/
 # RUN tar --extract --gzip --directory /opt/acestream --file /opt/acestream/acestream.tar.gz && \
 #    rm /opt/acestream/acestream.tar.gz
 
