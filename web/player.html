@@ -131,7 +131,26 @@
         }
 
         #loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 200;
             transition: opacity 0.3s ease;
+        }
+
+        #loading i {
+            font-size: 24px;
+            color: #007bff;
+        }
+
+        #loading p {
+            margin-top: 10px;
         }
 
     </style>
@@ -158,10 +177,9 @@
     <input type="text" id="acestream-link-input" placeholder="Insert Acestream link here"/>
     <button id="play-button">Play</button>
 </div>
-<div id="loading"
-     style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center; z-index: 200;">
-    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #007bff;"></i>
-    <p style="margin-top: 10px;">Cargando...</p>
+<div id="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p id="loading-p">Loading...</p>
 </div>
 
 <div id="doc">
@@ -489,7 +507,7 @@
         const playerId = link.replace(ACESTREAM_PREFIX, '');
 
         if (playerId.length > 1) {
-            loadingIndicator.style.display = 'block'; // Mostrar indicador de carga
+            loadingIndicator.style.display = 'block';
             getElement('acestream-link-input').value = link;
             document.title = `Ace Link [${playerId.substr(0, 7)}]`;
 
@@ -499,10 +517,9 @@
             });
 
             player.play().then(() => {
-                loadingIndicator.style.display = 'none'; // Ocultar indicador de carga cuando comience la reproducción
+                loadingIndicator.style.display = 'none';
             }).catch((error) => {
-                loadingIndicator.style.display = 'none'; // Ocultar indicador de carga si hay un error
-                alert('Error al reproducir el video. Intente nuevamente.');
+                loadingIndicator.style.display = 'none';
                 console.error('Error al reproducir el video:', error);
             });
         } else {
@@ -524,6 +541,7 @@
         const acestreamLinkInput = getElement('acestream-link-input');
         acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' : 'Insert Acestream link here';
         getElement('play-button').innerText = lang === 'es' ? 'Reproducir' : 'Play';
+        getElement('loading-p').innerText = lang === 'es' ? 'Cargando...' : 'Loading...';
     }
 
     getElement('toggle-view').addEventListener('click', toggleAcestreamInput);
