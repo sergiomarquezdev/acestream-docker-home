@@ -34,16 +34,16 @@ RUN set -ex && \
     rm /requirements.txt get-pip.py
 
 # Install Acestream from URL.
-RUN mkdir -p /opt/acestream && \
-    wget --no-verbose --output-document acestream.tgz "${ACESTREAM_VERSION}" && \
-    echo "${ACESTREAM_SHA256} acestream.tgz" | sha256sum --check && \
-    tar --extract --gzip --directory /opt/acestream --file acestream.tgz && \
-    rm acestream.tgz \
+#RUN mkdir -p /opt/acestream && \
+#    wget --no-verbose --output-document acestream.tgz "${ACESTREAM_VERSION}" && \
+#    echo "${ACESTREAM_SHA256} acestream.tgz" | sha256sum --check && \
+#    tar --extract --gzip --directory /opt/acestream --file acestream.tgz && \
+#    rm acestream.tgz \
 
 # Install Acestream from file. Actual (ACESTREAM_VERSION = acestream_3.2.3_ubuntu_22.04_x86_64_py3.10.tar.gz)
-# COPY resources/acestream.tar.gz /opt/acestream/
-# RUN tar --extract --gzip --directory /opt/acestream --file /opt/acestream/acestream.tar.gz && \
-#    rm /opt/acestream/acestream.tar.gz
+COPY resources/acestream.tar.gz /opt/acestream/
+RUN tar --extract --gzip --directory /opt/acestream --file /opt/acestream/acestream.tar.gz && \
+    rm /opt/acestream/acestream.tar.gz
 
 # Overwrite the Ace Stream web player.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
