@@ -33,12 +33,17 @@ RUN set -ex && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/* && \
     rm /requirements.txt get-pip.py
 
-# Install Acestream.
+# Install Acestream from URL.
 RUN mkdir -p /opt/acestream && \
     wget --no-verbose --output-document acestream.tgz "${ACESTREAM_VERSION}" && \
     echo "${ACESTREAM_SHA256} acestream.tgz" | sha256sum --check && \
     tar --extract --gzip --directory /opt/acestream --file acestream.tgz && \
-    rm acestream.tgz
+    rm acestream.tgz \
+
+# Install Acestream from file.
+# COPY acestream.tar.gz /opt/acestream/
+# RUN tar --extract --gzip --directory /opt/acestream --file /opt/acestream/acestream.tar.gz && \
+#    rm /opt/acestream/acestream.tar.gz
 
 # Overwrite the Ace Stream web player.
 COPY web/player.html /opt/acestream/data/webui/html/player.html
