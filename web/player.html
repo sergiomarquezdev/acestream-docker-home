@@ -41,6 +41,7 @@
             padding: 2px;
             border-radius: 5px;
             transform: inherit;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         #toggle-view {
@@ -114,7 +115,7 @@
             transition-duration: 0.2s;
         }
 
-        #load-button {
+        #play-button {
             background-color: #007bff;
             color: white;
             border: none;
@@ -125,7 +126,7 @@
             transition: background-color 0.3s ease;
         }
 
-        #load-button:hover {
+        #play-button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -150,55 +151,13 @@
              title="English" style="height: 15px"/>
     </button>
     <input type="text" id="acestream-link-input" placeholder="Insert Acestream link here"/>
-    <button id="load-button">Load</button>
+    <button id="play-button">Play</button>
 </div>
-<script>
-    const BASE_STREAM_URL = `http://127.0.0.1:6878/ace/manifest.m3u8?transcode_audio=1&id=`;
-    const ACESTREAM_PREFIX = "acestream://";
-    const player = videojs("video");
-
-    // Función reutilizable para obtener elementos por ID
-    function getElement(id) {
-        return document.getElementById(id);
-    }
-
-    // Load AceStream stream
-    function loadAceStream(link) {
-        window.scrollTo({top: 0, behavior: 'smooth'});
-        const playerId = link.replace(ACESTREAM_PREFIX, '');
-        if (playerId.length > 1) {
-            getElement('acestream-link-input').value = link;
-            document.title = `Ace Link [${playerId.substr(0, 7)}]`;
-            player.src({
-                src: BASE_STREAM_URL + playerId,
-                type: 'application/x-mpegURL',
-            });
-            player.play();
-        } else {
-            alert('Please insert a valid Acestream link.');
-        }
-    }
-
-    // Show/hide Acestream input
-    function toggleAcestreamInput() {
-        const inputDiv = getElement('acestream-link');
-        const icon = getElement('toggle-icon');
-        inputDiv.style.display = inputDiv.style.display === 'none' ? 'flex' : 'none';
-        icon.className = inputDiv.style.display === 'none' ? 'fas fa-eye' : 'fas fa-eye-slash';
-    }
-
-    // Change page language
-    function changeLanguage(lang) {
-        const acestreamLinkInput = getElement('acestream-link-input');
-        acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' : 'Insert Acestream link here';
-        getElement('load-button').innerText = lang === 'es' ? 'Cargar' : 'Load';
-    }
-
-    getElement('toggle-view').addEventListener('click', toggleAcestreamInput);
-    getElement('load-button').addEventListener('click', function () {
-        loadAceStream(getElement('acestream-link-input').value);
-    });
-</script>
+<div id="loading"
+     style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; text-align: center; z-index: 200;">
+    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #007bff;"></i>
+    <p style="margin-top: 10px;">Cargando...</p>
+</div>
 
 <div id="doc">
     <p>
@@ -507,6 +466,66 @@
         </a>
     </p>
 </div>
+
+<script>
+    const BASE_STREAM_URL = `http://127.0.0.1:6878/ace/manifest.m3u8?transcode_audio=1&id=`;
+    const ACESTREAM_PREFIX = "acestream://";
+    const player = videojs("video");
+
+    // Función reutilizable para obtener elementos por ID
+    function getElement(id) {
+        return document.getElementById(id);
+    }
+
+    // Load AceStream stream
+    function loadAceStream(link) {
+        const loadingIndicator = getElement('loading');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        const playerId = link.replace(ACESTREAM_PREFIX, '');
+
+        if (playerId.length > 1) {
+            loadingIndicator.style.display = 'block'; // Mostrar indicador de carga
+            getElement('acestream-link-input').value = link;
+            document.title = `Ace Link [${playerId.substr(0, 7)}]`;
+
+            player.src({
+                src: BASE_STREAM_URL + playerId,
+                type: 'application/x-mpegURL',
+            });
+
+            player.play().then(() => {
+                loadingIndicator.style.display = 'none'; // Ocultar indicador de carga cuando comience la reproducción
+            }).catch((error) => {
+                loadingIndicator.style.display = 'none'; // Ocultar indicador de carga si hay un error
+                alert('Error al reproducir el video. Intente nuevamente.');
+                console.error('Error al reproducir el video:', error);
+            });
+        } else {
+            alert('Please insert a valid Acestream link.');
+        }
+    }
+
+
+    // Show/hide Acestream input
+    function toggleAcestreamInput() {
+        const inputDiv = getElement('acestream-link');
+        const icon = getElement('toggle-icon');
+        inputDiv.style.display = inputDiv.style.display === 'none' ? 'flex' : 'none';
+        icon.className = inputDiv.style.display === 'none' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    // Change page language
+    function changeLanguage(lang) {
+        const acestreamLinkInput = getElement('acestream-link-input');
+        acestreamLinkInput.placeholder = lang === 'es' ? 'Insertar aquí el enlace Acestream' : 'Insert Acestream link here';
+        getElement('play-button').innerText = lang === 'es' ? 'Reproducir' : 'Play';
+    }
+
+    getElement('toggle-view').addEventListener('click', toggleAcestreamInput);
+    getElement('play-button').addEventListener('click', function () {
+        loadAceStream(getElement('acestream-link-input').value);
+    });
+</script>
 
 </body>
 
