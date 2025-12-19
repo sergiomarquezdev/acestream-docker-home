@@ -296,38 +296,38 @@
                 loadAceStream(link) {
                     this.hideError();
 
-                    if (!link || !link.startsWith(this.ACESTREAM_PREFIX)) {
+                    if (!link)
+                        return;
+
+                    const playerId = link.replace(this.ACESTREAM_PREFIX, '').toLowerCase();
+                    const isValidHash = /^[a-f0-9]{40}$/.test(playerId);
+
+                    if (!isValidHash) {
                         this.showError('invalidFormat');
                         return;
                     }
 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    const playerId = link.replace(this.ACESTREAM_PREFIX, '');
 
-                    if (playerId.length > 1) {
-                        this.elements.linkInput.value = link;
-                        document.title = `Ace Link [${playerId.substr(0, 7)}]`;
+                    this.elements.linkInput.value = link;
+                    document.title = `Ace Link [${playerId.substr(0, 7)}]`;
 
-                        this.elements.player.src({
-                            src: this.BASE_STREAM_URL + playerId,
-                            type: 'application/x-mpegURL',
+                    this.elements.player.src({
+                        src: this.BASE_STREAM_URL + playerId,
+                        type: 'application/x-mpegURL',
+                    });
+
+                    const playPromise = this.elements.player.play();
+
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            // Video started playing successfully
+                            this.togglePanel(false);
+                        }).catch((error) => {
+                            console.error('Video playback error:', error);
+                            this.showError('playbackFailed');
+                            this.togglePanel(true); // Show overlay again on error
                         });
-
-                        const playPromise = this.elements.player.play();
-
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                // Video started playing successfully
-                                this.togglePanel(false);
-                            }).catch((error) => {
-                                console.error('Video playback error:', error);
-                                this.showError('playbackFailed');
-                                this.togglePanel(true); // Show overlay again on error
-                            });
-                        }
-
-                    } else {
-                        this.showError('invalidFormat');
                     }
                 },
 
@@ -357,11 +357,11 @@
                     const messages = {
                         en: {
                             playbackFailed: 'Could not load the video. The link may be down or incorrect. Please try another one.',
-                            invalidFormat: 'Please insert a valid Acestream link starting with "acestream://".'
+                            invalidFormat: 'Please insert a valid acestream link or content id.'
                         },
                         es: {
                             playbackFailed: 'No se pudo cargar el vídeo. El enlace podría estar caído o ser incorrecto. Por favor, inténtelo con otro.',
-                            invalidFormat: 'Por favor, inserte un enlace Acestream válido que comience con "acestream://".'
+                            invalidFormat: 'Por favor, inserte un enlace o identificador de acestream válido.'
                         }
                     };
                     return messages[this.state.currentLang][type] || messages.en[type];
