@@ -84,20 +84,29 @@ For improved performance and reduced disk wear, you can run Acestream with cache
 
 **Usage:**
 
-1. **Start in RAM cache mode:**
-
-   ```bash
-   docker-compose --profile ram up -d
-   ```
-
-2. **Switch from standard mode to RAM mode:**
+1. **Stop any running containers first:**
 
    ```bash
    docker-compose down
+   ```
+
+2. **Start in RAM cache mode:**
+
+   ```bash
    docker-compose --profile ram up -d
    ```
 
-3. **Switch back to standard mode:**
+   > **Note:** Docker Compose will attempt to start both the base container (`acestream`) and the RAM profile container (`acestream-ram`). The base container will fail to start due to port conflict (this is expected behavior). Only `acestream-ram` will run successfully on port 6878.
+
+3. **Verify only the RAM container is running:**
+
+   ```bash
+   docker ps --filter "name=acestream" --format "table {{.Names}}\t{{.Status}}"
+   ```
+
+   Expected output: Only `acestream-ram` should be running and healthy.
+
+4. **Switch back to standard mode:**
 
    ```bash
    docker-compose down
@@ -108,10 +117,10 @@ For improved performance and reduced disk wear, you can run Acestream with cache
 
 ```bash
 # Check current RAM usage
-docker exec -it acestream-ram df -h | grep ACEStream
+docker exec acestream-ram df -h | grep ACEStream
 
 # Real-time monitoring
-watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cache"
+watch -n 1 "docker exec acestream-ram df -h /root/.ACEStream/.acestream_cache"
 ```
 
 **Important Notes:**
@@ -119,6 +128,52 @@ watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cach
 - Cache data is lost when the container stops (this is expected behavior for RAM cache)
 - RAM cache significantly reduces disk writes, extending SSD lifespan
 - The RAM cache size is set to 8GB by default
+
+### Memory Cache Mode (Cross-Platform)
+
+For users who want RAM caching but need cross-platform compatibility, use the native Acestream memory flag:
+
+**Usage:**
+
+1. **Stop any running containers first:**
+
+   ```bash
+   docker-compose down
+   ```
+
+2. **Start in memory cache mode:**
+
+   ```bash
+   docker-compose --profile memory up -d
+   ```
+
+   > **Note:** Docker Compose will attempt to start both the base container (`acestream`) and the memory profile container (`acestream-memory`). The base container will fail to start due to port conflict (this is expected behavior). Only `acestream-memory` will run successfully on port 6878.
+
+3. **Verify the flag is active:**
+
+   ```bash
+   docker logs acestream-memory | grep "Extra Flags"
+   ```
+
+   Expected output: `Extra Flags: --live-cache-type memory`
+
+**Features:**
+- Uses Acestream's native `--live-cache-type memory` flag
+- Works on Windows, macOS, and Linux (unlike tmpfs which requires Linux/WSL2)
+- Acestream manages memory allocation automatically
+- Cache is lost when container stops (expected behavior)
+
+**Comparison:**
+
+| Mode | Storage | Platform | RAM Control | Command |
+|------|---------|----------|-------------|---------|
+| Default | Disk | All | N/A | `docker-compose up -d` |
+| RAM (tmpfs) | RAM (8GB) | Linux/WSL2 | Docker | `docker-compose --profile ram up -d` |
+| Memory (flag) | RAM (auto) | All | Acestream | `docker-compose --profile memory up -d` |
+
+**Why does the base container fail when using profiles?**
+
+When you run `docker-compose --profile <profile> up -d`, Docker Compose starts both the base service and the profile-specific service because the profile services use `extends` to inherit configuration. Since both try to bind to port 6878, the base container fails (expected), and only the profile container runs successfully. This is normal Docker Compose behavior and ensures backward compatibility when running `docker-compose up -d` without any profile.
 
 ## Accessing the Web Interface
 
@@ -172,7 +227,8 @@ This ensures that the web interface points to the correct Acestream engine insta
 - Hardened startup script (`entrypoint.sh`) that validates environment variables and outputs detailed diagnostics.
 - Automatic patch of `player.html` so the web UI always points to the correct IP and port.
 - Multi-instance support: launch several containers simultaneously without port clashes.
-- **RAM cache mode**: optional profile to store cache in RAM for improved performance and reduced disk wear (Linux/WSL2).
+- **Health monitoring**: Built-in healthcheck detects service failures and enables auto-restart.
+- **Flexible cache modes**: Choose disk, RAM (tmpfs), or memory (native flag) based on your platform and needs.
 - Offline builds thanks to the bundled `resources/acestream.tar.gz` archive (no external downloads required).
 - Built-in **port conflict detection**: if the default port `6878` is already occupied (e.g. by the desktop Acestream Player), the Windows setup script automatically picks the next free even port.
 - Optional `--auto-clean` flag: after pulling a newer image the script can safely delete outdated Acestream container images to keep your Docker host tidy.

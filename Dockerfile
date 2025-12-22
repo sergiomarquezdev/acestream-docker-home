@@ -27,6 +27,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY config/entrypoint.sh /entrypoint.sh
 RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
+# SHA256 Checksum Verification (Optional Security Enhancement)
+# To verify integrity of acestream.tar.gz:
+#   1. Calculate: sha256sum resources/acestream.tar.gz
+#   2. Compare with official hash from Acestream
+#   3. Uncomment and update ARG below with correct hash
+#   4. Uncomment RUN line to enable verification
+#
+# ARG ACESTREAM_SHA256=REPLACE_WITH_ACTUAL_HASH
+# RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check || \
+#     (echo "ERROR: SHA256 checksum verification failed" && exit 1)
+
 # Copy and extract Acestream from the local archive
 COPY resources/acestream.tar.gz /tmp/acestream.tar.gz
 RUN mkdir -p /opt/acestream && \
@@ -41,6 +52,12 @@ COPY config/acestream.conf /opt/acestream/acestream.conf
 
 # Expose the default Acestream port
 EXPOSE 6878
+
+# Health check: Verify Acestream engine is responding
+# Checks every 30s with 3 retries before marking as unhealthy
+# Allows 40s startup time before first check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${HTTP_PORT}/webui/api/service?method=get_version', timeout=5)" || exit 1
 
 # Entrypoint for the container
 ENTRYPOINT ["/entrypoint.sh"]

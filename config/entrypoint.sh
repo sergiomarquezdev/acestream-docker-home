@@ -13,6 +13,7 @@ echo "Timestamp: $(date)"
 echo "Internal IP: ${INTERNAL_IP}"
 echo "HTTP Port: ${HTTP_PORT}"
 echo "HTTPS Port: ${HTTPS_PORT}"
+echo "Extra Flags: ${ACESTREAM_EXTRA_FLAGS:-none}"
 
 # === CONFIGURATION VALIDATION ===
 echo "=== VALIDATING CONFIGURATION ==="
@@ -55,7 +56,7 @@ echo "=== STARTING ACESTREAM ENGINE ==="
 echo "Command: /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} \"@/opt/acestream/acestream.conf\""
 
 # Add error handling for engine startup
-if ! /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} "@/opt/acestream/acestream.conf"; then
+if ! /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"; then
     echo "ERROR: Failed to start Acestream engine"
     echo "Configuration file contents:"
     cat /opt/acestream/acestream.conf

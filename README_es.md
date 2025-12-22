@@ -87,20 +87,29 @@ Para mejorar el rendimiento y reducir el desgaste del disco, puedes ejecutar Ace
 
 **Uso:**
 
-1. **Iniciar en modo caché RAM:**
-
-   ```bash
-   docker-compose --profile ram up -d
-   ```
-
-2. **Cambiar del modo estándar al modo RAM:**
+1. **Detener cualquier contenedor en ejecución primero:**
 
    ```bash
    docker-compose down
+   ```
+
+2. **Iniciar en modo caché RAM:**
+
+   ```bash
    docker-compose --profile ram up -d
    ```
 
-3. **Volver al modo estándar:**
+   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream`) como el contenedor del perfil RAM (`acestream-ram`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-ram` se ejecutará correctamente en el puerto 6878.
+
+3. **Verificar que solo el contenedor RAM está ejecutándose:**
+
+   ```bash
+   docker ps --filter "name=acestream" --format "table {{.Names}}\t{{.Status}}"
+   ```
+
+   Salida esperada: Solo `acestream-ram` debe estar ejecutándose y saludable (healthy).
+
+4. **Volver al modo estándar:**
 
    ```bash
    docker-compose down
@@ -111,10 +120,10 @@ Para mejorar el rendimiento y reducir el desgaste del disco, puedes ejecutar Ace
 
 ```bash
 # Verificar uso actual de RAM
-docker exec -it acestream-ram df -h | grep ACEStream
+docker exec acestream-ram df -h | grep ACEStream
 
 # Monitorización en tiempo real
-watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cache"
+watch -n 1 "docker exec acestream-ram df -h /root/.ACEStream/.acestream_cache"
 ```
 
 **Notas Importantes:**
@@ -122,6 +131,52 @@ watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cach
 - Los datos de caché se pierden cuando el contenedor se detiene (este es el comportamiento esperado para caché RAM)
 - La caché RAM reduce significativamente las escrituras en disco, prolongando la vida útil de SSDs
 - El tamaño de la caché RAM está configurado en 8GB por defecto
+
+### Modo Caché Memoria (Multi-plataforma)
+
+Para usuarios que quieren caché en RAM pero necesitan compatibilidad multi-plataforma, usa el flag nativo de Acestream:
+
+**Uso:**
+
+1. **Detener cualquier contenedor en ejecución primero:**
+
+   ```bash
+   docker-compose down
+   ```
+
+2. **Iniciar en modo caché memoria:**
+
+   ```bash
+   docker-compose --profile memory up -d
+   ```
+
+   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream`) como el contenedor del perfil memoria (`acestream-memory`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-memory` se ejecutará correctamente en el puerto 6878.
+
+3. **Verificar que el flag está activo:**
+
+   ```bash
+   docker logs acestream-memory | grep "Extra Flags"
+   ```
+
+   Salida esperada: `Extra Flags: --live-cache-type memory`
+
+**Características:**
+- Usa el flag nativo de Acestream `--live-cache-type memory`
+- Funciona en Windows, macOS y Linux (a diferencia de tmpfs que requiere Linux/WSL2)
+- Acestream gestiona la asignación de memoria automáticamente
+- La caché se pierde al detener el contenedor (comportamiento esperado)
+
+**Comparación:**
+
+| Modo | Almacenamiento | Plataforma | Control RAM | Comando |
+|------|----------------|------------|-------------|---------|
+| Estándar | Disco | Todas | N/A | `docker-compose up -d` |
+| RAM (tmpfs) | RAM (8GB) | Linux/WSL2 | Docker | `docker-compose --profile ram up -d` |
+| Memory (flag) | RAM (auto) | Todas | Acestream | `docker-compose --profile memory up -d` |
+
+**¿Por qué falla el contenedor base al usar perfiles?**
+
+Cuando ejecutas `docker-compose --profile <perfil> up -d`, Docker Compose inicia tanto el servicio base como el servicio específico del perfil porque los servicios de perfil usan `extends` para heredar configuración. Como ambos intentan vincularse al puerto 6878, el contenedor base falla (esperado), y solo el contenedor del perfil se ejecuta correctamente. Este es el comportamiento normal de Docker Compose y asegura retrocompatibilidad cuando se ejecuta `docker-compose up -d` sin ningún perfil.
 
 ## Acceder a la Interfaz Web
 
@@ -175,7 +230,8 @@ inicio del contenedor. Esto asegura que la interfaz web apunte a la instancia co
 - Script de arranque reforzado (`entrypoint.sh`) que valida variables de entorno y muestra diagnósticos detallados.
 - Parche automático de `player.html` para que la interfaz web siempre apunte a la IP y puerto correctos.
 - Soporte multi-instancia: puedes lanzar varios contenedores simultáneamente sin conflictos de puertos.
-- **Modo caché RAM**: perfil opcional para almacenar la caché en RAM, mejorando el rendimiento y reduciendo el desgaste del disco (Linux/WSL2).
+- **Monitoreo de salud**: Healthcheck integrado detecta fallos del servicio y permite auto-reinicio.
+- **Modos de caché flexibles**: Elige disco, RAM (tmpfs), o memoria (flag nativo) según tu plataforma y necesidades.
 - Construcciones offline gracias al archivo `resources/acestream.tar.gz` incluido (no se requieren descargas externas).
 - **Detección automática de conflictos de puertos**: si el puerto por defecto `6878` está ocupado (por ejemplo, por Acestream Player de escritorio), el script de Windows asigna el siguiente puerto par libre.
 - Flag opcional `--auto-clean`: tras descargar una nueva imagen, el script puede eliminar de forma segura las imágenes antiguas de Acestream para mantener limpio tu host Docker.
