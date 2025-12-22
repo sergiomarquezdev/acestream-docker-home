@@ -63,6 +63,8 @@ instancias.
 
 ## Docker Compose
 
+### Modo Estándar (Caché en Disco)
+
 1. **Iniciar el Contenedor**: Usa `docker-compose` para iniciar el contenedor:
 
    ```bash
@@ -74,6 +76,52 @@ instancias.
    ```bash
    docker-compose pull && docker-compose up -d
     ```
+
+### Modo Caché RAM (Solo Linux/WSL2)
+
+Para mejorar el rendimiento y reducir el desgaste del disco, puedes ejecutar Acestream con la caché almacenada en RAM en lugar del disco.
+
+**Requisitos:**
+- Sistema Linux o WSL2 (no funciona en Docker Desktop para Windows sin WSL2)
+- Al menos 8GB de RAM disponible
+
+**Uso:**
+
+1. **Iniciar en modo caché RAM:**
+
+   ```bash
+   docker-compose --profile ram up -d
+   ```
+
+2. **Cambiar del modo estándar al modo RAM:**
+
+   ```bash
+   docker-compose down
+   docker-compose --profile ram up -d
+   ```
+
+3. **Volver al modo estándar:**
+
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+**Monitorizar el uso de RAM:**
+
+```bash
+# Verificar uso actual de RAM
+docker exec -it acestream-ram df -h | grep ACEStream
+
+# Monitorización en tiempo real
+watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cache"
+```
+
+**Notas Importantes:**
+- Solo puede ejecutarse un modo (estándar o RAM) a la vez debido a conflictos de puerto
+- Los datos de caché se pierden cuando el contenedor se detiene (este es el comportamiento esperado para caché RAM)
+- La caché RAM reduce significativamente las escrituras en disco, prolongando la vida útil de SSDs
+- El tamaño de la caché RAM está configurado en 8GB por defecto
 
 ## Acceder a la Interfaz Web
 
@@ -127,6 +175,7 @@ inicio del contenedor. Esto asegura que la interfaz web apunte a la instancia co
 - Script de arranque reforzado (`entrypoint.sh`) que valida variables de entorno y muestra diagnósticos detallados.
 - Parche automático de `player.html` para que la interfaz web siempre apunte a la IP y puerto correctos.
 - Soporte multi-instancia: puedes lanzar varios contenedores simultáneamente sin conflictos de puertos.
+- **Modo caché RAM**: perfil opcional para almacenar la caché en RAM, mejorando el rendimiento y reduciendo el desgaste del disco (Linux/WSL2).
 - Construcciones offline gracias al archivo `resources/acestream.tar.gz` incluido (no se requieren descargas externas).
 - **Detección automática de conflictos de puertos**: si el puerto por defecto `6878` está ocupado (por ejemplo, por Acestream Player de escritorio), el script de Windows asigna el siguiente puerto par libre.
 - Flag opcional `--auto-clean`: tras descargar una nueva imagen, el script puede eliminar de forma segura las imágenes antiguas de Acestream para mantener limpio tu host Docker.

@@ -2,7 +2,6 @@ services:
   acestream:
     image: smarquezp/docker-acestream-ubuntu-home:latest
     container_name: acestream
-    profiles: ["default"]
     ports:
       - 6878:6878
     environment:
