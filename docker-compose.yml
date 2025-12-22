@@ -8,6 +8,15 @@ services:
       - INTERNAL_IP=127.0.0.1
       - HTTP_PORT=6878
       - HTTPS_PORT=6879
+
+  acestream-ram:
+    extends:
+      service: acestream
+    container_name: acestream-ram
+    profiles: ["ram"]
+    tmpfs:
+      - /root/.ACEStream/.acestream_cache:rw,noexec,nosuid,size=8g
+
 networks:
   default:
     driver: bridge

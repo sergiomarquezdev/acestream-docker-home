@@ -60,6 +60,8 @@ instances.
 
 ## Docker Compose
 
+### Standard Mode (Disk Cache)
+
 1. **Start the Container**: Use `docker-compose` to start the container:
 
    ```bash
@@ -71,6 +73,52 @@ instances.
    ```bash
    docker-compose pull && docker-compose up -d
     ```
+
+### RAM Cache Mode (Linux/WSL2 Only)
+
+For improved performance and reduced disk wear, you can run Acestream with cache stored in RAM instead of disk.
+
+**Requirements:**
+- Linux host or WSL2 (does not work on Docker Desktop for Windows without WSL2)
+- At least 8GB of available RAM
+
+**Usage:**
+
+1. **Start in RAM cache mode:**
+
+   ```bash
+   docker-compose --profile ram up -d
+   ```
+
+2. **Switch from standard mode to RAM mode:**
+
+   ```bash
+   docker-compose down
+   docker-compose --profile ram up -d
+   ```
+
+3. **Switch back to standard mode:**
+
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+**Monitor RAM usage:**
+
+```bash
+# Check current RAM usage
+docker exec -it acestream-ram df -h | grep ACEStream
+
+# Real-time monitoring
+watch -n 1 "docker exec -it acestream-ram df -h /root/.ACEStream/.acestream_cache"
+```
+
+**Important Notes:**
+- Only one mode (standard or RAM) can run at a time due to port conflicts
+- Cache data is lost when the container stops (this is expected behavior for RAM cache)
+- RAM cache significantly reduces disk writes, extending SSD lifespan
+- The RAM cache size is set to 8GB by default
 
 ## Accessing the Web Interface
 
@@ -124,6 +172,7 @@ This ensures that the web interface points to the correct Acestream engine insta
 - Hardened startup script (`entrypoint.sh`) that validates environment variables and outputs detailed diagnostics.
 - Automatic patch of `player.html` so the web UI always points to the correct IP and port.
 - Multi-instance support: launch several containers simultaneously without port clashes.
+- **RAM cache mode**: optional profile to store cache in RAM for improved performance and reduced disk wear (Linux/WSL2).
 - Offline builds thanks to the bundled `resources/acestream.tar.gz` archive (no external downloads required).
 - Built-in **port conflict detection**: if the default port `6878` is already occupied (e.g. by the desktop Acestream Player), the Windows setup script automatically picks the next free even port.
 - Optional `--auto-clean` flag: after pulling a newer image the script can safely delete outdated Acestream container images to keep your Docker host tidy.
