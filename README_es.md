@@ -47,7 +47,7 @@ Este proyecto utiliza la imagen base **ubuntu:22.04**. Debes clonar el proyecto 
 la imagen, utiliza:
 
 ```bash
-docker build --no-cache -t docker-acestream .
+docker build --no-cache -t acestream-engine .
 ```
 
 ## Ejecutar el Contenedor
@@ -55,7 +55,7 @@ docker build --no-cache -t docker-acestream .
 Para iniciar un contenedor y ejecutar Acestream con asignación dinámica de puertos:
 
 ```bash
-docker run --name docker-acestream -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped docker-acestream
+docker run --name acestream-engine -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped acestream-engine
 ```
 
 El script `SetupAcestream.bat` maneja la asignación dinámica de puertos para evitar conflictos al ejecutar múltiples
@@ -99,15 +99,15 @@ Para mejorar el rendimiento y reducir el desgaste del disco, puedes ejecutar Ace
    docker-compose --profile ram up -d
    ```
 
-   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream`) como el contenedor del perfil RAM (`acestream-ram`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-ram` se ejecutará correctamente en el puerto 6878.
+   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream-engine`) como el contenedor del perfil RAM (`acestream-engine-ram`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-engine-ram` se ejecutará correctamente en el puerto 6878.
 
 3. **Verificar que solo el contenedor RAM está ejecutándose:**
 
    ```bash
-   docker ps --filter "name=acestream" --format "table {{.Names}}\t{{.Status}}"
+   docker ps --filter "name=acestream-engine" --format "table {{.Names}}\t{{.Status}}"
    ```
 
-   Salida esperada: Solo `acestream-ram` debe estar ejecutándose y saludable (healthy).
+   Salida esperada: Solo `acestream-engine-ram` debe estar ejecutándose y saludable (healthy).
 
 4. **Volver al modo estándar:**
 
@@ -120,10 +120,10 @@ Para mejorar el rendimiento y reducir el desgaste del disco, puedes ejecutar Ace
 
 ```bash
 # Verificar uso actual de RAM
-docker exec acestream-ram df -h | grep ACEStream
+docker exec acestream-engine-ram df -h | grep ACEStream
 
 # Monitorización en tiempo real
-watch -n 1 "docker exec acestream-ram df -h /root/.ACEStream/.acestream_cache"
+watch -n 1 "docker exec acestream-engine-ram df -h /root/.ACEStream/.acestream_cache"
 ```
 
 **Notas Importantes:**
@@ -150,12 +150,12 @@ Para usuarios que quieren caché en RAM pero necesitan compatibilidad multi-plat
    docker-compose --profile memory up -d
    ```
 
-   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream`) como el contenedor del perfil memoria (`acestream-memory`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-memory` se ejecutará correctamente en el puerto 6878.
+   > **Nota:** Docker Compose intentará iniciar tanto el contenedor base (`acestream-engine`) como el contenedor del perfil memoria (`acestream-engine-memory`). El contenedor base fallará al iniciar debido al conflicto de puerto (esto es comportamiento esperado). Solo `acestream-engine-memory` se ejecutará correctamente en el puerto 6878.
 
 3. **Verificar que el flag está activo:**
 
    ```bash
-   docker logs acestream-memory | grep "Extra Flags"
+   docker logs acestream-engine-memory | grep "Extra Flags"
    ```
 
    Salida esperada: `Extra Flags: --live-cache-type memory`
@@ -194,7 +194,7 @@ Puedes cargar enlaces de Acestream directamente en el campo de entrada proporcio
 Verifica el estado de salud del contenedor de Acestream:
 
 ```bash
-docker inspect --format='{{json .State.Health}}' docker-acestream
+docker inspect --format='{{json .State.Health}}' acestream-engine
 ```
 
 Alternativamente, utiliza la interfaz web:

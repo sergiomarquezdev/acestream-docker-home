@@ -1,7 +1,7 @@
 services:
-  acestream:
+  acestream-engine:
     image: smarquezp/docker-acestream-ubuntu-home:latest
-    container_name: acestream
+    container_name: acestream-engine
     ports:
       - 6878:6878
     environment:
@@ -17,8 +17,8 @@ services:
 
   acestream-ram:
     extends:
-      service: acestream
-    container_name: acestream-ram
+      service: acestream-engine
+    container_name: acestream-engine-ram
     profiles: ["ram"]
     ports:
       - 6878:6878
@@ -27,8 +27,8 @@ services:
 
   acestream-memory:
     extends:
-      service: acestream
-    container_name: acestream-memory
+      service: acestream-engine
+    container_name: acestream-engine-memory
     profiles: ["memory"]
     ports:
       - 6878:6878

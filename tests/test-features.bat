@@ -1,124 +1,124 @@
 @echo off
 REM ===============================================
-REM Script de Testing para Acestream Docker
-REM Prueba todas las nuevas funcionalidades
+REM Testing Script for Acestream Docker
+REM Tests all new features
 REM ===============================================
 
 echo ================================================
-echo   ACESTREAM DOCKER - PLAN DE TESTING
+echo   ACESTREAM DOCKER - TESTING PLAN
 echo ================================================
 echo.
 
-REM === TEST 1: Verificar imagen construida ===
-echo [TEST 1] Verificando imagen local construida...
-docker images acestream-test:latest
+REM === TEST 1: Verify built image ===
+echo [TEST 1] Verifying local built image...
+docker images acestream-engine:latest
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Imagen acestream-test:latest no encontrada
-    echo Por favor ejecuta: docker build -t acestream-test:latest .
+    echo ERROR: Image acestream-engine:latest not found
+    echo Please run: docker build -t acestream-engine:latest .
     pause
     exit /b 1
 )
-echo OK - Imagen encontrada
+echo OK - Image found
 echo.
 
-REM === TEST 2: Profile DEFAULT (Disco) - Retrocompatibilidad ===
-echo [TEST 2] Probando Profile DEFAULT (cache en disco)...
-echo Iniciando contenedor con docker-compose up -d...
+REM === TEST 2: DEFAULT Profile (Disk) - Backward Compatibility ===
+echo [TEST 2] Testing DEFAULT Profile (disk cache)...
+echo Starting container with docker-compose up -d...
 docker-compose up -d
 
-echo Esperando 50 segundos para que Acestream inicie y healthcheck se ejecute...
+echo Waiting 50 seconds for Acestream to start and healthcheck to run...
 timeout /t 50 /nobreak
 
-echo Verificando estado del contenedor...
-docker ps -a --filter "name=acestream" --format "table {{.Names}}\t{{.Status}}"
+echo Verifying container status...
+docker ps -a --filter "name=acestream-engine" --format "table {{.Names}}\t{{.Status}}"
 
 echo.
-echo Verificando healthcheck (debe mostrar 'healthy' o 'health: starting')...
-docker inspect acestream --format "{{.State.Health.Status}}"
+echo Verifying healthcheck (should show 'healthy' or 'health: starting')...
+docker inspect acestream-engine --format "{{.State.Health.Status}}"
 
 echo.
-echo Verificando logs para ver si hay errores...
-docker logs acestream --tail 30
+echo Verifying logs for errors...
+docker logs acestream-engine --tail 30
 
 echo.
-echo Probando endpoint de API...
+echo Testing API endpoint...
 curl -s "http://127.0.0.1:6878/webui/api/service?method=get_version"
 
 echo.
 echo.
-echo TEST 2 completado. Presiona cualquier tecla para detener y continuar...
+echo TEST 2 completed. Press any key to stop and continue...
 pause
 
 docker-compose down
 timeout /t 5 /nobreak
 echo.
 
-REM === TEST 3: Profile RAM (tmpfs) ===
-echo [TEST 3] Probando Profile RAM (tmpfs 8GB)...
-echo NOTA: Este test requiere WSL2 o Linux
-echo Iniciando contenedor con --profile ram...
+REM === TEST 3: RAM Profile (tmpfs) ===
+echo [TEST 3] Testing RAM Profile (tmpfs 8GB)...
+echo NOTE: This test requires WSL2 or Linux
+echo Starting container with --profile ram...
 docker-compose --profile ram up -d
 
-echo Esperando 50 segundos...
+echo Waiting 50 seconds...
 timeout /t 50 /nobreak
 
-echo Verificando estado...
-docker ps -a --filter "name=acestream-ram" --format "table {{.Names}}\t{{.Status}}"
+echo Verifying status...
+docker ps -a --filter "name=acestream-engine-ram" --format "table {{.Names}}\t{{.Status}}"
 
 echo.
-echo Verificando healthcheck...
-docker inspect acestream-ram --format "{{.State.Health.Status}}"
+echo Verifying healthcheck...
+docker inspect acestream-engine-ram --format "{{.State.Health.Status}}"
 
 echo.
-echo Verificando que tmpfs este montado...
-docker exec acestream-ram df -h | findstr "ACEStream"
+echo Verifying that tmpfs is mounted...
+docker exec acestream-engine-ram df -h | findstr "ACEStream"
 
 echo.
-echo TEST 3 completado. Presiona cualquier tecla para detener y continuar...
+echo TEST 3 completed. Press any key to stop and continue...
 pause
 
 docker-compose down
 timeout /t 5 /nobreak
 echo.
 
-REM === TEST 4: Profile MEMORY (flag nativo cross-platform) ===
-echo [TEST 4] Probando Profile MEMORY (flag nativo --live-cache-type memory)...
-echo Iniciando contenedor con --profile memory...
+REM === TEST 4: MEMORY Profile (native cross-platform flag) ===
+echo [TEST 4] Testing MEMORY Profile (native flag --live-cache-type memory)...
+echo Starting container with --profile memory...
 docker-compose --profile memory up -d
 
-echo Esperando 50 segundos...
+echo Waiting 50 seconds...
 timeout /t 50 /nobreak
 
-echo Verificando estado...
-docker ps -a --filter "name=acestream-memory" --format "table {{.Names}}\t{{.Status}}"
+echo Verifying status...
+docker ps -a --filter "name=acestream-engine-memory" --format "table {{.Names}}\t{{.Status}}"
 
 echo.
-echo Verificando healthcheck...
-docker inspect acestream-memory --format "{{.State.Health.Status}}"
+echo Verifying healthcheck...
+docker inspect acestream-engine-memory --format "{{.State.Health.Status}}"
 
 echo.
-echo Verificando logs para confirmar flag --live-cache-type memory...
-docker logs acestream-memory | findstr "live-cache-type memory"
-docker logs acestream-memory | findstr "Extra Flags"
+echo Verifying logs to confirm --live-cache-type memory flag...
+docker logs acestream-engine-memory | findstr "live-cache-type memory"
+docker logs acestream-engine-memory | findstr "Extra Flags"
 
 echo.
-echo TEST 4 completado. Presiona cualquier tecla para detener...
+echo TEST 4 completed. Press any key to stop...
 pause
 
 docker-compose down
 echo.
 
-REM === RESUMEN ===
+REM === SUMMARY ===
 echo ================================================
-echo   TESTING COMPLETADO
+echo   TESTING COMPLETED
 echo ================================================
 echo.
-echo Revisa los resultados anteriores:
+echo Review the results above:
 echo.
-echo [TEST 1] Imagen local: OK
-echo [TEST 2] Profile default (disco): Revisar estado/healthcheck
-echo [TEST 3] Profile ram (tmpfs): Revisar si tmpfs esta montado
-echo [TEST 4] Profile memory (flag): Revisar si aparece flag en logs
+echo [TEST 1] Local image: OK
+echo [TEST 2] Default profile (disk): Review status/healthcheck
+echo [TEST 3] RAM profile (tmpfs): Review if tmpfs is mounted
+echo [TEST 4] Memory profile (flag): Review if flag appears in logs
 echo.
 echo ================================================
 pause

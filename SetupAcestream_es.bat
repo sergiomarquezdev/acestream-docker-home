@@ -7,7 +7,7 @@ SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 set "IMAGE_NAME=smarquezp/docker-acestream-ubuntu-home:latest"
 set "INTERNAL_IP=127.0.0.1"
 set "PORT_BASE=6878"
-set "SERVICE_NAME_BASE=acestream_"
+set "SERVICE_NAME_BASE=acestream-engine_"
 set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
 set "HTTP_PORT_BASE=6878"
@@ -109,10 +109,12 @@ docker rm !SERVICE_NAME! -f >NUL 2>&1
 echo.
 echo Creando o actualizando el archivo docker-compose.yml...
 >%DOCKER_COMPOSE_FILE% (
+    echo version: '3.8'
     echo services:
     echo   !SERVICE_NAME!:
     echo     image: !IMAGE_NAME!
     echo     container_name: !SERVICE_NAME!
+    echo     restart: unless-stopped
     echo     ports:
     echo       - !PORT!:!PORT!
     echo     environment:
