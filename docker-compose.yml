@@ -25,6 +25,11 @@ services:
     tmpfs:
       - /root/.ACEStream/.acestream_cache:rw,noexec,nosuid,size=8g
 
+  # Memory cache mode: Uses Acestream's native memory cache
+  # Note: environment vars are duplicated here because Docker Compose
+  # replaces (not merges) the parent's environment when using 'extends'.
+  # This is intentional to add ACESTREAM_EXTRA_FLAGS while preserving
+  # backward compatibility (no 'default' profile on base service).
   acestream-memory:
     extends:
       service: acestream-engine
