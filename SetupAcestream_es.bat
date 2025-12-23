@@ -119,6 +119,36 @@ echo Creando o actualizando el archivo docker-compose.yml...
     echo       - INTERNAL_IP=!INTERNAL_IP!
     echo       - HTTP_PORT=!HTTP_PORT!
     echo       - HTTPS_PORT=!HTTPS_PORT!
+    echo     healthcheck:
+    echo       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:!HTTP_PORT!/webui/api/service?method=get_version', timeout=5^)"]
+    echo       interval: 30s
+    echo       timeout: 10s
+    echo       retries: 3
+    echo       start_period: 40s
+    echo.
+    echo   !SERVICE_NAME!-ram:
+    echo     extends:
+    echo       service: !SERVICE_NAME!
+    echo     container_name: !SERVICE_NAME!-ram
+    echo     profiles: ["ram"]
+    echo     ports:
+    echo       - !PORT!:!PORT!
+    echo     tmpfs:
+    echo       - /root/.ACEStream/.acestream_cache:rw,noexec,nosuid,size=8g
+    echo.
+    echo   !SERVICE_NAME!-memory:
+    echo     extends:
+    echo       service: !SERVICE_NAME!
+    echo     container_name: !SERVICE_NAME!-memory
+    echo     profiles: ["memory"]
+    echo     ports:
+    echo       - !PORT!:!PORT!
+    echo     environment:
+    echo       - INTERNAL_IP=!INTERNAL_IP!
+    echo       - HTTP_PORT=!HTTP_PORT!
+    echo       - HTTPS_PORT=!HTTPS_PORT!
+    echo       - ACESTREAM_EXTRA_FLAGS=--live-cache-type memory
+    echo.
     echo networks:
     echo   default:
     echo     driver: bridge
