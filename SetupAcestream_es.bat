@@ -122,7 +122,7 @@ echo Creando o actualizando el archivo docker-compose.yml...
     echo       - HTTP_PORT=!HTTP_PORT!
     echo       - HTTPS_PORT=!HTTPS_PORT!
     echo     healthcheck:
-    echo       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:!HTTP_PORT!/webui/api/service?method=get_version', timeout=5^)"]
+    echo       test: ["CMD", "sh", "-c", "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:$$HTTP_PORT/webui/api/service?method=get_version', timeout=5^)\""]
     echo       interval: 30s
     echo       timeout: 10s
     echo       retries: 3
