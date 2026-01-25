@@ -1,6 +1,11 @@
 # Use the official Ubuntu 22.04 LTS (Jammy Jellyfish) base image
 FROM ubuntu:22.04
 
+# Image metadata
+LABEL maintainer="sergiomarquezdev" \
+      description="Acestream Engine containerized for easy deployment" \
+      version="3.2.11"
+
 # Define environment variables for encoding and app configuration
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -19,8 +24,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Build tools for Python modules
     build-essential python3-dev libsqlite3-dev libxml2-dev libxslt1-dev \
  && pip install --no-cache-dir \
-    # Python modules required by Acestream
-    apsw lxml PyNaCl requests pycryptodome isodate \
+    # Python modules required by Acestream (pinned for reproducible builds)
+    apsw==3.46.0.0 \
+    lxml==5.2.2 \
+    PyNaCl==1.5.0 \
+    requests==2.32.3 \
+    pycryptodome==3.20.0 \
+    isodate==0.6.1 \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy the entrypoint script, fix line endings, and grant execute permissions
@@ -30,11 +40,10 @@ RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 # SHA256 Checksum Verification (Optional Security Enhancement)
 # To verify integrity of acestream.tar.gz:
 #   1. Calculate: sha256sum resources/acestream.tar.gz
-#   2. Compare with official hash from Acestream
-#   3. Uncomment and update ARG below with correct hash
-#   4. Uncomment RUN line to enable verification
+#   2. Expected hash: 9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
+#   3. To enable verification, uncomment the lines below
 #
-# ARG ACESTREAM_SHA256=REPLACE_WITH_ACTUAL_HASH
+# ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
 # RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check || \
 #     (echo "ERROR: SHA256 checksum verification failed" && exit 1)
 

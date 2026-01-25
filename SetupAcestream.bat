@@ -12,6 +12,7 @@ set "DOCKER_COMPOSE_FILE=docker-compose.yml"
 set "PREFIX=acestream://"
 set "HTTP_PORT_BASE=6878"
 set "HTTPS_PORT_BASE=6879"
+set "MAX_PORT=6920"
 :: -------------------------
 :: Parse command line arguments for optional flags
 :: -------------------------
@@ -60,8 +61,16 @@ echo Your current internal IP address is: %INTERNAL_IP%
 echo If this is correct, press ENTER. Otherwise, enter the correct IP and press ENTER.
 echo.
 set /p USER_IP=Enter the IP or press ENTER if it is correct:
-if not "%USER_IP%"=="" set "INTERNAL_IP=%USER_IP%"
-echo Using IP: %INTERNAL_IP%
+if not "%USER_IP%"=="" (
+    rem Basic IP format validation (checks for X.X.X.X pattern)
+    echo %USER_IP% | findstr /R "^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" >nul
+    if !errorlevel! NEQ 0 (
+        echo WARNING: Invalid IP format entered. Using detected IP: %INTERNAL_IP%
+    ) else (
+        set "INTERNAL_IP=%USER_IP%"
+    )
+)
+echo Using IP: !INTERNAL_IP!
 
 :: -------------------------
 :: Dynamic port and service name assignment
@@ -72,6 +81,13 @@ set "HTTP_PORT=%HTTP_PORT_BASE%"
 set "HTTPS_PORT=%HTTPS_PORT_BASE%"
 
 :checkPort
+rem Safety check: prevent infinite loop if all ports are occupied
+if !PORT! GTR %MAX_PORT% (
+    echo ERROR: No available ports found in range %PORT_BASE%-%MAX_PORT%
+    echo Please free up a port or check your network configuration.
+    pause
+    exit /b 1
+)
 rem First, ensure the desired port is not already taken by another process (e.g., native Acestream Player)
 netstat -ano | findstr /R /C:":!PORT!\>" >nul 2>&1
 if !errorlevel! == 0 (

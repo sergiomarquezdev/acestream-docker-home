@@ -2,7 +2,7 @@
 
 # ================================================
 # ACESTREAM DOCKER ENTRYPOINT
-# Mejorado con logging y manejo de errores
+# Enhanced with logging and error handling
 # ================================================
 
 set -e  # Exit on any error

@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# IDE and editor files
+.idea
+.cursor
+*.iml
+.vscode
+
+# Documentation
+*.md
+LICENSE
+
+# Tests
+tests/
+
+# Windows setup scripts (not needed in image)
+*.bat
+
+# Claude plans
+.claude/
+
+# Preserve acestream binary
+!resources/acestream.tar.gz
