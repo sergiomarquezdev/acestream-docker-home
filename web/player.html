@@ -187,6 +187,29 @@
             color: var(--text-color);
             display: block;
         }
+
+        #attribution {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            z-index: 50;
+            font-size: 11px;
+            opacity: 0.35;
+            transition: opacity 0.3s ease;
+        }
+
+        #attribution:hover {
+            opacity: 0.8;
+        }
+
+        #attribution a {
+            color: var(--text-muted-color);
+            text-decoration: none;
+        }
+
+        #attribution a:hover {
+            color: var(--primary-color);
+        }
     </style>
 </head>
 
@@ -243,6 +266,10 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <div id="attribution">
+            <a href="https://github.com/sergiomarquezdev/acestream-docker-home" target="_blank" rel="noopener">@sergiomarquezdev</a>
         </div>
     </div>
 
