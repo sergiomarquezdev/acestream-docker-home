@@ -190,25 +190,27 @@
 
         #attribution {
             position: absolute;
-            bottom: 8px;
-            right: 12px;
+            bottom: 10px;
+            right: 10px;
             z-index: 50;
-            font-size: 11px;
-            opacity: 0.35;
+            opacity: 0.4;
             transition: opacity 0.3s ease;
         }
 
         #attribution:hover {
-            opacity: 0.8;
+            opacity: 1;
         }
 
-        #attribution a {
-            color: var(--text-muted-color);
-            text-decoration: none;
+        #attribution img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        #attribution a:hover {
-            color: var(--primary-color);
+        #attribution:hover img {
+            border-color: var(--primary-color);
         }
     </style>
 </head>
@@ -269,7 +271,9 @@
         </div>
 
         <div id="attribution">
-            <a href="https://github.com/sergiomarquezdev/acestream-docker-home" target="_blank" rel="noopener">@sergiomarquezdev</a>
+            <a href="https://github.com/sergiomarquezdev/acestream-docker-home" target="_blank" rel="noopener" title="@sergiomarquezdev">
+                <img src="https://github.com/sergiomarquezdev.png?size=44" alt="sergiomarquezdev" />
+            </a>
         </div>
     </div>
 
