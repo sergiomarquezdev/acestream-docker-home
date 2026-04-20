@@ -1,6 +1,0 @@
-requests
-pycryptodome
-isodate
-lxml
-apsw
-PyNaCl
