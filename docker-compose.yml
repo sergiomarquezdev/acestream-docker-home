@@ -37,7 +37,3 @@ services:
       - HTTP_PORT=6878
       - HTTPS_PORT=6879
       - ACESTREAM_EXTRA_FLAGS=--live-cache-type memory
-
-networks:
-  default:
-    driver: bridge
