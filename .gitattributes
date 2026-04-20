@@ -1,0 +1,17 @@
+# Normalize line endings across platforms
+* text=auto
+
+# Shell scripts MUST use LF (required inside Docker / Linux)
+*.sh text eol=lf
+
+# Windows batch scripts MUST use CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never normalize
+*.png binary
+*.jpg binary
+*.gz binary
+*.tar binary
+*.zip binary
+*.ico binary
