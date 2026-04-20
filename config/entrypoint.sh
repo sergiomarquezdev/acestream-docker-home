@@ -53,7 +53,7 @@ fi
 
 # === ACESTREAM ENGINE STARTUP ===
 echo "=== STARTING ACESTREAM ENGINE ==="
-echo "Command: /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} \"@/opt/acestream/acestream.conf\""
+echo "Command: /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} \"@/opt/acestream/acestream.conf\""
 
 # Add error handling for engine startup
 if ! /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"; then
