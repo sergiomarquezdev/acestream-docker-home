@@ -9,7 +9,6 @@ LABEL maintainer="sergiomarquezdev" \
 # Define environment variables for encoding and app configuration
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-ENV ACESTREAM_VERSION="acestream_3.2.11_ubuntu_22.04_x86_64_py3.10.tar.gz"
 ENV INTERNAL_IP="127.0.0.1"
 ENV HTTP_PORT="6878"
 ENV HTTPS_PORT="6879"
@@ -37,21 +36,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY config/entrypoint.sh /entrypoint.sh
 RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
-# SHA256 Checksum Verification (Optional Security Enhancement)
-# To verify integrity of acestream.tar.gz:
-#   1. Calculate: sha256sum resources/acestream.tar.gz
-#   2. Expected hash: 9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
-#   3. To enable verification, uncomment the lines below
-#
-# ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
-# RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check || \
-#     (echo "ERROR: SHA256 checksum verification failed" && exit 1)
-
-# Copy and extract Acestream from the local archive
+# Copy Acestream archive, verify SHA256 integrity, then extract in one layer.
+# Override at build time with --build-arg ACESTREAM_SHA256=<hash> if the tarball is updated.
+ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
 COPY resources/acestream.tar.gz /tmp/acestream.tar.gz
-RUN mkdir -p /opt/acestream && \
-    tar --extract --gzip --directory /opt/acestream --file /tmp/acestream.tar.gz && \
-    rm /tmp/acestream.tar.gz
+RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check \
+    && mkdir -p /opt/acestream \
+    && tar --extract --gzip --directory /opt/acestream --file /tmp/acestream.tar.gz \
+    && rm /tmp/acestream.tar.gz
 
 # Overwrite the default web player with the custom version
 COPY web/player.html /opt/acestream/data/webui/html/player.html
