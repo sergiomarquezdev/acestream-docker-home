@@ -2,42 +2,47 @@
 
 [Leer documentación en Español](README_es.md)
 
-This project deploys Acestream within a Docker container using Ubuntu 22.04 and Python 3.10 for compatibility.
+Run Acestream inside a Docker container on Ubuntu 22.04 + Python 3.10. One script, one command, and you have a private streaming engine ready on your machine.
 
-Acestream is a platform for live streaming via peer-to-peer networks. Dockerizing Acestream simplifies its setup and provides isolated environments.
+Acestream is a peer-to-peer live-streaming platform. Containerizing it makes setup repeatable and keeps it isolated from the rest of your system.
+
+## What's new in v8.1.0
+
+- **Smaller image** — ~40% slimmer (1.19 GB → 729 MB) by purging the build toolchain after compiling native Python modules.
+- **SHA256 integrity check** — the bundled Acestream tarball is verified against a pinned hash during `docker build`; a tampered or corrupted archive aborts the build.
+- **One unified setup script** — `SetupAcestream.bat` now asks your language at launch (or pass `--lang=en` / `--lang=es` to skip the prompt). The old `SetupAcestream_es.bat` is gone.
+- Various quality-of-life fixes: deprecated `version:` field removed, single-source `HEALTHCHECK`, consistent LF line endings via `.gitattributes`.
 
 ## Prerequisites
 
-1. **Docker Installation**: Ensure Docker Desktop is installed on your system.
-   - [Docker Products Page](https://www.docker.com/products/docker-desktop)
-   - [Official Documentation](https://docs.docker.com/get-docker/)
+You only need **Docker Desktop** installed and running.
 
-## Automatic Installation and Execution with Setup Scripts (Windows)
+- Download: <https://www.docker.com/products/docker-desktop>
+- Help: <https://docs.docker.com/get-docker/>
 
-### Language Selection
-Choose the setup script based on your preferred language:
+## Quick start on Windows (recommended)
 
-- **🇺🇸 English**: Use `SetupAcestream.bat`
-- **🇪🇸 Español**: Use `SetupAcestream_es.bat`
+1. Download `SetupAcestream.bat` from the [Releases page](https://github.com/sergiomarquezdev/acestream-docker-home/releases).
+2. Right-click the file and choose **Run as administrator**.
+3. When asked, pick your language (press `1` for English, `2` for Spanish — default is English after 5 seconds).
+4. Confirm your internal IP address (just press ENTER to use the auto-detected one).
+5. The script pulls the latest image, starts the container, and opens the web player automatically.
 
-Both scripts have **identical functionality** and only differ in the interface language.
+### Command-line flags
 
-### Script Overview
-The setup scripts automate the following tasks:
+| Flag | Effect |
+|------|--------|
+| `--lang=en` | Force English UI (skips the language prompt). |
+| `--lang=es` | Force Spanish UI (skips the language prompt). |
+| `--auto-clean` | Remove obsolete Acestream images automatically after pulling a newer one. |
 
-   - Checking for Docker installation and operational status.
-   - Downloading the latest Acestream Docker image.
-   - Setting up the container with dynamic port assignment (to avoid conflicts).
-   - Updating the `docker-compose.yml` file dynamically based on the available ports.
-   - Starting the Acestream container and opening the web interface.
+### What the script does under the hood
 
-### Usage
-1. **Choose your language**: Download either `SetupAcestream.bat` (English) or `SetupAcestream_es.bat` (Spanish)
-2. **Run as Administrator**: Right-click the chosen script and select "Run as Administrator"
-3. **Follow prompts**: The script will guide you through the setup process
-
-> **Note:** The script ensures the latest Acestream Docker image is used and that the container management is handled
-> efficiently.
+- Checks that Docker is installed and running.
+- Detects a non-loopback internal IPv4 address.
+- Finds a free port pair (default `6878`/`6879`, falling back to the next free even port up to `6920`).
+- Writes a `docker-compose.yml` tailored to your environment.
+- Pulls the latest image, starts the container, and opens `http://<ip>:<port>/webui/player/`.
 
 ## Building the Image
 

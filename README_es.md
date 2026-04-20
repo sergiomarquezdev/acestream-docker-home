@@ -2,44 +2,47 @@
 
 [Read documentation in English](README.md)
 
-Este proyecto despliega Acestream dentro de un contenedor Docker usando Ubuntu 22.04 y Python 3.10 para garantizar la
-compatibilidad.
+Ejecuta Acestream dentro de un contenedor Docker sobre Ubuntu 22.04 + Python 3.10. Un solo script, un solo comando, y tendrás un motor de streaming privado listo en tu máquina.
 
-Acestream es una plataforma para streaming en vivo a través de redes peer-to-peer. Dockerizar Acestream simplifica su
-configuración y proporciona entornos aislados.
+Acestream es una plataforma de streaming en directo peer-to-peer. Contenerizarlo hace que la instalación sea repetible y que quede aislada del resto de tu sistema.
+
+## Novedades en v8.1.0
+
+- **Imagen más ligera** — ~40% más pequeña (1.19 GB → 729 MB) gracias a la purga del toolchain de compilación tras instalar los módulos nativos de Python.
+- **Verificación SHA256** — el tarball de Acestream incluido se verifica contra un hash fijado durante `docker build`; si el archivo estuviera corrupto o manipulado, el build aborta.
+- **Script de instalación unificado** — `SetupAcestream.bat` ahora pregunta el idioma al arrancar (o pasa `--lang=en` / `--lang=es` para saltarte el prompt). El antiguo `SetupAcestream_es.bat` desaparece.
+- Varios arreglos de calidad: campo `version:` obsoleto eliminado, `HEALTHCHECK` con fuente única, normalización de line endings vía `.gitattributes`.
 
 ## Requisitos Previos
 
-1. **Instalación de Docker**: Asegúrate de que Docker Desktop esté instalado en tu sistema.
-   - [Página de productos de Docker](https://www.docker.com/products/docker-desktop)
-   - [Documentación Oficial](https://docs.docker.com/get-docker/)
+Solo necesitas **Docker Desktop** instalado y funcionando.
 
-## Instalación Automática y Ejecución con Scripts de Configuración (Windows)
+- Descarga: <https://www.docker.com/products/docker-desktop>
+- Ayuda: <https://docs.docker.com/get-docker/>
 
-### Selección de Idioma
-Elige el script de configuración según tu idioma preferido:
+## Inicio rápido en Windows (recomendado)
 
-- **🇺🇸 English**: Usa `SetupAcestream.bat`
-- **🇪🇸 Español**: Usa `SetupAcestream_es.bat`
+1. Descarga `SetupAcestream.bat` desde la [página de Releases](https://github.com/sergiomarquezdev/acestream-docker-home/releases).
+2. Haz clic derecho sobre el archivo y elige **Ejecutar como administrador**.
+3. Cuando te pregunte, elige tu idioma (pulsa `1` para inglés, `2` para español — por defecto inglés a los 5 segundos).
+4. Confirma tu dirección IP interna (basta con pulsar ENTER para usar la detectada automáticamente).
+5. El script descarga la última imagen, arranca el contenedor y abre el reproductor web automáticamente.
 
-Ambos scripts tienen **funcionalidad idéntica** y solo difieren en el idioma de la interfaz.
+### Flags de línea de comandos
 
-### Descripción del Script
-Los scripts de configuración automatizan las siguientes tareas:
+| Flag | Efecto |
+|------|--------|
+| `--lang=en` | Fuerza interfaz en inglés (omite el prompt de idioma). |
+| `--lang=es` | Fuerza interfaz en español (omite el prompt de idioma). |
+| `--auto-clean` | Elimina automáticamente imágenes obsoletas de Acestream tras descargar una nueva. |
 
-   - Verificación de la instalación y estado operativo de Docker.
-   - Descarga de la imagen Docker más reciente de Acestream.
-   - Configuración del contenedor con asignación dinámica de puertos (para evitar conflictos).
-   - Actualización del archivo `docker-compose.yml` de forma dinámica según los puertos disponibles.
-   - Inicio del contenedor Acestream y apertura de la interfaz web.
+### Qué hace el script por dentro
 
-### Uso
-1. **Elige tu idioma**: Descarga `SetupAcestream.bat` (inglés) o `SetupAcestream_es.bat` (español)
-2. **Ejecutar como Administrador**: Haz clic derecho en el script elegido y selecciona "Ejecutar como administrador"
-3. **Seguir las instrucciones**: El script te guiará a través del proceso de configuración
-
-> **Nota:** El script garantiza que se utilice la imagen Docker más reciente de Acestream y que la gestión del
-> contenedor se maneje de manera eficiente.
+- Comprueba que Docker está instalado y corriendo.
+- Detecta una dirección IPv4 interna no-loopback.
+- Busca un par de puertos libres (por defecto `6878`/`6879`, con fallback al siguiente puerto par libre hasta `6920`).
+- Escribe un `docker-compose.yml` adaptado a tu entorno.
+- Descarga la última imagen, arranca el contenedor y abre `http://<ip>:<puerto>/webui/player/`.
 
 ## Construir la Imagen
 

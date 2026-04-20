@@ -11,7 +11,7 @@ The project has been carefully organized to follow semantic versioning, with a w
 - **Containerization:** Docker and Docker Compose.
 - **Base Image:** Ubuntu 22.04 with Python 3.10.
 - **Main Service:** Acestream Engine (currently v3.2.11).
-- **Configuration Scripts:** Windows Batch (`.bat`) for guided setup in English and Spanish.
+- **Configuration Script:** A single Windows Batch (`SetupAcestream.bat`) for guided setup with a language selection prompt (English / Spanish) and `--lang=en|es` flag for scripted runs.
 - **Entrypoint:** A robust shell script (`entrypoint.sh`) that validates the configuration and prepares the execution environment.
 - **Web Interface:** A custom and modern web player (`player.html`) to interact with the Acestream engine.
 
@@ -40,8 +40,8 @@ docker build --no-cache -t docker-acestream .
 
 This is the easiest method for Windows users.
 
-1.  **Download:** Get `SetupAcestream.bat` (English) or `SetupAcestream_es.bat` (Spanish) from the [GitHub releases assets](https://github.com/sergiomarquezdev/acestream-docker-home/releases).
-2.  **Run as Administrator:** The script will guide the user through IP and port configuration, and start the container.
+1.  **Download:** Get `SetupAcestream.bat` from the [GitHub releases assets](https://github.com/sergiomarquezdev/acestream-docker-home/releases).
+2.  **Run as Administrator:** The script prompts for language (or accepts `--lang=en|es`) and guides the user through IP and port configuration before starting the container.
 
 #### 2. Using Docker Compose (Cross-platform)
 
