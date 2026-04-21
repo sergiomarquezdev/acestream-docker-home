@@ -36,3 +36,11 @@ The Acestream tarball (`resources/acestream.tar.gz`) is bundled in the repositor
 ## Image Size
 
 ~729 MB (down from 1.19 GB after purging the build toolchain).
+
+## Multi-stage Build
+
+A partir de esta versión el Dockerfile usa multi-stage:
+- Stage `builder`: instala el toolchain y compila `lxml`, `apsw`, etc. en `/install`.
+- Stage `runtime`: copia solo los paquetes compilados y las librerías runtime necesarias.
+
+Esto elimina completamente el build toolchain de la imagen final (no solo lo purga de la capa), reduciendo el surface de ataque y el tamaño de la historia de capas.
