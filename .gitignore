@@ -32,3 +32,6 @@ test-results/
 
 # Local screenshots produced by manual testing (keep the repo clean)
 v*.png
+
+# Git worktrees
+.worktrees/
