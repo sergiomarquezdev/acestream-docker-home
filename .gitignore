@@ -1,6 +1,34 @@
-# IntelliJ project files
-.idea
+# IntelliJ / JetBrains
+.idea/
 *.iml
-out
-gen
+out/
+gen/
+
+# VS Code
+.vscode/
+
+# Cursor
 .cursor/
+
+# Claude Code
+.claude/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Playwright / browser-testing artefacts
+.playwright-mcp/
+playwright-report/
+test-results/
+
+# Local screenshots produced by manual testing (keep the repo clean)
+v*.png
