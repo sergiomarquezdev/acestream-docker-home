@@ -40,16 +40,16 @@ for %%A in (%*) do (
 if "!LANG_CHOICE!"=="" (
     echo.
     echo ==============================================
-    echo  Select language / Elige idioma
+    echo  Elige idioma / Select language
     echo ==============================================
-    echo   [1] English  (default)
-    echo   [2] Espanol
+    echo   [1] Espanol  (por defecto / default)
+    echo   [2] English
     echo.
-    choice /C 12 /T 5 /D 1 /N /M "Press 1 or 2 (default 1 in 5s): "
+    choice /C 12 /T 5 /D 1 /N /M "Pulsa 1 o 2 / Press 1 or 2 (5s -> 1): "
     if !errorlevel! == 2 (
-        set "LANG_CHOICE=es"
-    ) else (
         set "LANG_CHOICE=en"
+    ) else (
+        set "LANG_CHOICE=es"
     )
 )
 

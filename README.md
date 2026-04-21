@@ -10,7 +10,7 @@ Acestream is a peer-to-peer live-streaming platform. Containerizing it makes set
 
 - **Smaller image** — ~40% slimmer (1.19 GB → 729 MB) by purging the build toolchain after compiling native Python modules.
 - **SHA256 integrity check** — the bundled Acestream tarball is verified against a pinned hash during `docker build`; a tampered or corrupted archive aborts the build.
-- **One unified setup script** — `SetupAcestream.bat` now asks your language at launch (or pass `--lang=en` / `--lang=es` to skip the prompt). The old `SetupAcestream_es.bat` is gone.
+- **One unified setup script** — `SetupAcestream.bat` now asks your language at launch (or pass `--lang=en` / `--lang=es` to skip the prompt). Just double-click it: Spanish is the 5-second default so it "just works" for non-technical users. The old `SetupAcestream_es.bat` is gone.
 - Various quality-of-life fixes: deprecated `version:` field removed, single-source `HEALTHCHECK`, consistent LF line endings via `.gitattributes`.
 
 ## Prerequisites
@@ -24,7 +24,7 @@ You only need **Docker Desktop** installed and running.
 
 1. Download `SetupAcestream.bat` from the [Releases page](https://github.com/sergiomarquezdev/acestream-docker-home/releases).
 2. Right-click the file and choose **Run as administrator**.
-3. When asked, pick your language (press `1` for English, `2` for Spanish — default is English after 5 seconds).
+3. When asked, pick your language (press `1` for Spanish, `2` for English — if you just wait 5 seconds, Spanish is picked automatically).
 4. Confirm your internal IP address (just press ENTER to use the auto-detected one).
 5. The script pulls the latest image, starts the container, and opens the web player automatically.
 
