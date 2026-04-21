@@ -20,4 +20,4 @@ The internal IP is not known at build time; it is only known at container startu
 | ram | tmpfs (8GB) | Linux/WSL2 | `docker-compose --profile ram up -d acestream-ram` |
 | memory | RAM (auto) | All | `docker-compose --profile memory up -d acestream-memory` |
 
-**Note on port conflict:** When using `--profile`, Docker Compose starts both the base service and the profile service. Both compete for port 6878; whichever binds first wins, and the other fails with "port already allocated". This is expected behavior when using profiles.
+**Note on port conflict:** The commands above name the specific service (e.g., `acestream-memory`) so only that service starts. If you run `docker-compose --profile memory up -d` without naming the service, Docker Compose starts both the base and the profile service; they race for port 6878 and one fails with "port already allocated".
