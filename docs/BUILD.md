@@ -31,7 +31,7 @@ docker build --build-arg ACESTREAM_SHA256=<new-hash> -t acestream-engine .
 
 ## Offline Builds
 
-The tarball is included in the repository. No external downloads are required during build.
+The Acestream tarball (`resources/acestream.tar.gz`) is bundled in the repository. If you have already built the base image or have the Ubuntu packages cached, the build does not need to download the engine binary from the internet.
 
 ## Image Size
 
