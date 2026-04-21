@@ -4,15 +4,14 @@
 
 `ubuntu:22.04` with Python 3.10.
 
-## Single-stage Build
+## Build Strategy
 
-The Dockerfile uses a single heavy RUN layer that:
-1. Installs runtime dependencies plus the build toolchain
-2. Compiles native Python modules (`lxml`, `apsw`, etc.)
-3. Purges the build toolchain
-4. Reinstalls runtime-only libraries (`libxml2`, `libxslt1.1`, `libsqlite3-0`)
+The Dockerfile uses a multi-stage build:
 
-This was a conscious choice: Ubuntu + apt-get make multi-stage builds complex because runtime libraries must be reinstalled in the final stage anyway.
+1. **Builder stage** (`ubuntu:22.04 AS builder`): installs the build toolchain and compiles native Python modules (`lxml`, `apsw`, etc.) to `/install`.
+2. **Runtime stage** (`ubuntu:22.04`): copies only the compiled packages and installs runtime-only libraries (`libxml2`, `libxslt1.1`, `libsqlite3-0`).
+
+Previously, a single-stage build with an in-layer purge was used. The multi-stage approach was adopted because it completely removes the build toolchain from the final image history (not just from the layer content), reducing the attack surface. Image size remains approximately the same (~729 MB) because Ubuntu runtime libraries must still be installed in the final stage.
 
 ## SHA256 Integrity Check
 
@@ -35,12 +34,4 @@ The Acestream tarball (`resources/acestream.tar.gz`) is bundled in the repositor
 
 ## Image Size
 
-~729 MB (down from 1.19 GB after purging the build toolchain).
-
-## Multi-stage Build
-
-A partir de esta versión el Dockerfile usa multi-stage:
-- Stage `builder`: instala el toolchain y compila `lxml`, `apsw`, etc. en `/install`.
-- Stage `runtime`: copia solo los paquetes compilados y las librerías runtime necesarias.
-
-Esto elimina completamente el build toolchain de la imagen final (no solo lo purga de la capa), reduciendo el surface de ataque y el tamaño de la historia de capas.
+~729 MB. The build toolchain is completely absent from the final image history thanks to the multi-stage build.
