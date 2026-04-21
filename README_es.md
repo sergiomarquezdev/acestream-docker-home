@@ -2,7 +2,7 @@
 
 [Read documentation in English](README.md)
 
-Ejecuta Acestream dentro de un contenedor Docker sobre Ubuntu 22.04 + Python 3.10. Un solo script, un solo comando, y tendrás un motor de streaming privado listo en tu máquina.
+Ejecuta Acestream dentro de un contenedor Docker sobre Ubuntu 22.04 + Python 3.10. Un solo script, un solo comando y tendrás un motor de streaming privado listo en tu máquina.
 
 ## Novedades en v8.1.0
 
