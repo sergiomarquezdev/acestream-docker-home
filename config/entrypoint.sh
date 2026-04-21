@@ -2,7 +2,7 @@
 
 # ================================================
 # ACESTREAM DOCKER ENTRYPOINT
-# Enhanced with logging and error handling
+# Enhanced with logging, format validation and error handling
 # ================================================
 
 set -e  # Exit on any error
@@ -10,26 +10,19 @@ set -e  # Exit on any error
 # === VALIDATION HELPERS ===
 validate_ip() {
     local ip="$1"
-    if [ -z "$ip" ]; then
-        echo "ERROR: INTERNAL_IP environment variable not set"
+    if [[ -z "$ip" ]]; then
+        echo "ERROR: INTERNAL_IP is empty"
+        return 1
+    fi
+    if ! [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "ERROR: INTERNAL_IP '$ip' is not a valid IPv4 address"
         return 1
     fi
     local IFS='.'
-    local -a octets
     read -ra octets <<< "$ip"
-    if [ "${#octets[@]}" -ne 4 ]; then
-        echo "ERROR: INTERNAL_IP does not match IPv4 format X.X.X.X"
-        return 1
-    fi
     for octet in "${octets[@]}"; do
-        case "$octet" in
-            ''|*[!0-9]*)
-                echo "ERROR: INTERNAL_IP does not match IPv4 format X.X.X.X"
-                return 1
-                ;;
-        esac
-        if [ "$octet" -gt 255 ]; then
-            echo "ERROR: INTERNAL_IP octet $octet is out of range 0-255"
+        if [[ "$octet" -lt 0 || "$octet" -gt 255 ]]; then
+            echo "ERROR: INTERNAL_IP '$ip' contains an invalid octet ($octet)"
             return 1
         fi
     done
@@ -39,18 +32,16 @@ validate_ip() {
 validate_port() {
     local port="$1"
     local name="$2"
-    if [ -z "$port" ]; then
-        echo "ERROR: $name environment variable not set"
+    if [[ -z "$port" ]]; then
+        echo "ERROR: $name is empty"
         return 1
     fi
-    case "$port" in
-        ''|*[!0-9]*)
-            echo "ERROR: $name is not numeric"
-            return 1
-            ;;
-    esac
-    if [ "$port" -lt 1024 ] || [ "$port" -gt 65535 ]; then
-        echo "ERROR: $name must be between 1024 and 65535"
+    if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: $name '$port' is not a number"
+        return 1
+    fi
+    if [[ "$port" -lt 1024 || "$port" -gt 65535 ]]; then
+        echo "ERROR: $name '$port' must be between 1024 and 65535"
         return 1
     fi
     return 0
@@ -59,8 +50,9 @@ validate_port() {
 validate_https_port() {
     local http="$1"
     local https="$2"
-    if [ "$https" -ne $((http + 1)) ]; then
-        echo "ERROR: HTTPS_PORT ($https) must be HTTP_PORT ($http) + 1"
+    local expected=$((http + 1))
+    if [[ "$https" -ne "$expected" ]]; then
+        echo "ERROR: HTTPS_PORT ($https) must be HTTP_PORT ($http) + 1 (expected $expected)"
         return 1
     fi
     return 0
@@ -99,20 +91,19 @@ else
     echo "WARNING: player.html not found, skipping configuration"
 fi
 
-# === NETWORK BIND VERIFICATION ===
+# === VERIFY ENGINE BINDS TO INTERNAL_IP ===
 echo "=== VERIFYING NETWORK BIND ==="
 python3 -c "
 import socket, sys
-ip = '${INTERNAL_IP}'
-port = ${HTTP_PORT}
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((ip, port))
+    s.settimeout(5)
+    s.bind(('${INTERNAL_IP}', ${HTTP_PORT}))
     s.close()
-    print('Network bind verification: OK')
+    print('Network bind test: OK')
 except Exception as e:
-    print('WARNING: Cannot bind to ' + ip + ':' + str(port) + ' - ' + str(e))
-    sys.exit(0)
+    print(f'WARNING: Cannot bind to ${INTERNAL_IP}:${HTTP_PORT}: {e}')
+    print('This may be expected if INTERNAL_IP is not local to the container.')
 " || true
 
 # === ACESTREAM ENGINE STARTUP ===
