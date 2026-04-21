@@ -1,124 +1,172 @@
 @echo off
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
+
 REM ===============================================
-REM Testing Script for Acestream Docker
-REM Tests all new features
+REM Automated smoke test for Acestream Docker.
+REM Non-interactive: no user prompts, safe for CI-style runs.
+REM Run from the repo root with Docker Desktop already running.
+REM
+REM Exit codes:
+REM   0 - all tests passed (or skipped because of missing WSL2)
+REM   1 - at least one test failed
+REM   2 - environment is not ready (Docker down, image unavailable)
 REM ===============================================
 
+REM Prepend Windows System32 so we always get the Windows 'timeout' and
+REM 'findstr' binaries, even when invoked from a POSIX shell (MSYS / Git
+REM Bash) where coreutils may shadow them.
+set "PATH=%SystemRoot%\System32;%SystemRoot%;%PATH%"
+
+set "IMAGE=smarquezp/docker-acestream-ubuntu-home:latest"
+set "WAIT_HEALTHY=75"
+set "PASS=0"
+set "FAIL=0"
+set "SKIP=0"
+
 echo ================================================
-echo   ACESTREAM DOCKER - TESTING PLAN
+echo   ACESTREAM DOCKER - SMOKE TEST
 echo ================================================
 echo.
 
-REM === TEST 1: Verify built image ===
-echo [TEST 1] Verifying local built image...
-docker images acestream-engine:latest
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Image acestream-engine:latest not found
-    echo Please run: docker build -t acestream-engine:latest .
-    pause
+REM === PRE-FLIGHT: Docker daemon ===
+docker info >nul 2>&1
+if !errorlevel! neq 0 (
+    echo [FATAL] Docker is not running. Start Docker Desktop and retry.
+    exit /b 2
+)
+
+REM === PRE-FLIGHT: image available locally or pullable ===
+echo [PRE ] Checking that image !IMAGE! is reachable...
+docker image inspect !IMAGE! >nul 2>&1
+if !errorlevel! neq 0 (
+    echo [PRE ] Image not present locally, pulling...
+    docker pull !IMAGE!
+    if !errorlevel! neq 0 (
+        echo [FATAL] Cannot pull !IMAGE!. Build it with 'docker build -t !IMAGE! .' first.
+        exit /b 2
+    )
+)
+echo [PRE ] Image OK.
+
+REM === Detect WSL (needed for the tmpfs-based 'ram' profile) ===
+wsl --status >nul 2>&1
+if !errorlevel! == 0 (
+    set "HAS_WSL=true"
+) else (
+    set "HAS_WSL=false"
+)
+echo [PRE ] WSL detected: !HAS_WSL!
+echo.
+
+REM === Ensure a clean slate ===
+docker-compose --profile ram --profile memory down --remove-orphans >nul 2>&1
+
+REM ===============================================
+REM TEST 1 - default profile (disk cache)
+REM ===============================================
+echo [TEST 1] default profile (disk cache)
+docker-compose up -d
+if !errorlevel! neq 0 goto :t1_fail
+
+call :waitHealthy acestream-engine
+if !errorlevel! neq 0 goto :t1_fail
+
+curl -s "http://127.0.0.1:6878/webui/api/service?method=get_version" | findstr /C:"3.2.11" >nul
+if !errorlevel! neq 0 goto :t1_fail
+
+echo    [PASS] container healthy and API reports 3.2.11
+set /a PASS+=1
+goto :t1_end
+:t1_fail
+echo    [FAIL] see 'docker logs acestream-engine'
+set /a FAIL+=1
+:t1_end
+docker-compose down >nul 2>&1
+echo.
+
+REM ===============================================
+REM TEST 2 - memory profile (native --live-cache-type memory)
+REM ===============================================
+echo [TEST 2] memory profile (native flag, cross-platform)
+docker-compose --profile memory up -d acestream-memory
+if !errorlevel! neq 0 goto :t2_fail
+
+call :waitHealthy acestream-engine-memory
+if !errorlevel! neq 0 goto :t2_fail
+
+docker logs acestream-engine-memory 2>&1 | findstr /C:"--live-cache-type memory" >nul
+if !errorlevel! neq 0 goto :t2_fail
+
+echo    [PASS] container healthy and --live-cache-type memory present in logs
+set /a PASS+=1
+goto :t2_end
+:t2_fail
+echo    [FAIL] see 'docker logs acestream-engine-memory'
+set /a FAIL+=1
+:t2_end
+docker-compose --profile memory down >nul 2>&1
+echo.
+
+REM ===============================================
+REM TEST 3 - ram profile (tmpfs; needs Linux or WSL2)
+REM ===============================================
+echo [TEST 3] ram profile (tmpfs, Linux/WSL2 only)
+if "!HAS_WSL!"=="false" (
+    echo    [SKIP] WSL not detected; tmpfs requires Linux or WSL2
+    set /a SKIP+=1
+    goto :t3_end
+)
+
+docker-compose --profile ram up -d acestream-ram
+if !errorlevel! neq 0 goto :t3_fail
+
+call :waitHealthy acestream-engine-ram
+if !errorlevel! neq 0 goto :t3_fail
+
+docker exec acestream-engine-ram df -h | findstr "ACEStream" >nul
+if !errorlevel! neq 0 goto :t3_fail
+
+echo    [PASS] container healthy and tmpfs mounted at ACEStream cache
+set /a PASS+=1
+goto :t3_cleanup
+:t3_fail
+echo    [FAIL] see 'docker logs acestream-engine-ram'
+set /a FAIL+=1
+:t3_cleanup
+docker-compose --profile ram down >nul 2>&1
+:t3_end
+echo.
+
+REM ===============================================
+REM SUMMARY
+REM ===============================================
+echo ================================================
+echo   RESULT: !PASS! passed, !FAIL! failed, !SKIP! skipped
+echo ================================================
+if !FAIL! gtr 0 (
+    endlocal
     exit /b 1
 )
-echo OK - Image found
-echo.
+endlocal
+exit /b 0
 
-REM === TEST 2: DEFAULT Profile (Disk) - Backward Compatibility ===
-echo [TEST 2] Testing DEFAULT Profile (disk cache)...
-echo Starting container with docker-compose up -d...
-docker-compose up -d
-
-echo Waiting 50 seconds for Acestream to start and healthcheck to run...
-timeout /t 50 /nobreak
-
-echo Verifying container status...
-docker ps -a --filter "name=acestream-engine" --format "table {{.Names}}\t{{.Status}}"
-
-echo.
-echo Verifying healthcheck (should show 'healthy' or 'health: starting')...
-docker inspect acestream-engine --format "{{.State.Health.Status}}"
-
-echo.
-echo Verifying logs for errors...
-docker logs acestream-engine --tail 30
-
-echo.
-echo Testing API endpoint...
-curl -s "http://127.0.0.1:6878/webui/api/service?method=get_version"
-
-echo.
-echo.
-echo TEST 2 completed. Press any key to stop and continue...
-pause
-
-docker-compose down
-timeout /t 5 /nobreak
-echo.
-
-REM === TEST 3: RAM Profile (tmpfs) ===
-echo [TEST 3] Testing RAM Profile (tmpfs 8GB)...
-echo NOTE: This test requires WSL2 or Linux
-echo Starting container with --profile ram...
-docker-compose --profile ram up -d
-
-echo Waiting 50 seconds...
-timeout /t 50 /nobreak
-
-echo Verifying status...
-docker ps -a --filter "name=acestream-engine-ram" --format "table {{.Names}}\t{{.Status}}"
-
-echo.
-echo Verifying healthcheck...
-docker inspect acestream-engine-ram --format "{{.State.Health.Status}}"
-
-echo.
-echo Verifying that tmpfs is mounted...
-docker exec acestream-engine-ram df -h | findstr "ACEStream"
-
-echo.
-echo TEST 3 completed. Press any key to stop and continue...
-pause
-
-docker-compose down
-timeout /t 5 /nobreak
-echo.
-
-REM === TEST 4: MEMORY Profile (native cross-platform flag) ===
-echo [TEST 4] Testing MEMORY Profile (native flag --live-cache-type memory)...
-echo Starting container with --profile memory...
-docker-compose --profile memory up -d
-
-echo Waiting 50 seconds...
-timeout /t 50 /nobreak
-
-echo Verifying status...
-docker ps -a --filter "name=acestream-engine-memory" --format "table {{.Names}}\t{{.Status}}"
-
-echo.
-echo Verifying healthcheck...
-docker inspect acestream-engine-memory --format "{{.State.Health.Status}}"
-
-echo.
-echo Verifying logs to confirm --live-cache-type memory flag...
-docker logs acestream-engine-memory | findstr "live-cache-type memory"
-docker logs acestream-engine-memory | findstr "Extra Flags"
-
-echo.
-echo TEST 4 completed. Press any key to stop...
-pause
-
-docker-compose down
-echo.
-
-REM === SUMMARY ===
-echo ================================================
-echo   TESTING COMPLETED
-echo ================================================
-echo.
-echo Review the results above:
-echo.
-echo [TEST 1] Local image: OK
-echo [TEST 2] Default profile (disk): Review status/healthcheck
-echo [TEST 3] RAM profile (tmpfs): Review if tmpfs is mounted
-echo [TEST 4] Memory profile (flag): Review if flag appears in logs
-echo.
-echo ================================================
-pause
+REM ===============================================
+REM Subroutine: :waitHealthy <container-name>
+REM Polls docker inspect until the container reports 'healthy'
+REM or WAIT_HEALTHY seconds elapse.
+REM ===============================================
+:waitHealthy
+set "CONTAINER=%~1"
+set "ELAPSED=0"
+:waitLoop
+if !ELAPSED! geq !WAIT_HEALTHY! (
+    echo    [health] !CONTAINER! did not become healthy within !WAIT_HEALTHY!s
+    exit /b 1
+)
+for /f "usebackq" %%s in (`docker inspect !CONTAINER! --format "{{.State.Health.Status}}" 2^>nul`) do set "STATUS=%%s"
+if /I "!STATUS!"=="healthy" exit /b 0
+REM 'ping' is used as a sleep because 'timeout' refuses to run when stdin
+REM is redirected (e.g. when the script is invoked from a POSIX shell).
+ping -n 3 127.0.0.1 >nul 2>&1
+set /a ELAPSED+=2
+goto waitLoop
