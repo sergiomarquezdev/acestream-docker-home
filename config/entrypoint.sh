@@ -21,7 +21,7 @@ validate_ip() {
     local IFS='.'
     read -ra octets <<< "$ip"
     for octet in "${octets[@]}"; do
-        if [[ "$octet" -lt 0 || "$octet" -gt 255 ]]; then
+        if [[ 10#$octet -lt 0 || 10#$octet -gt 255 ]]; then
             echo "ERROR: INTERNAL_IP '$ip' contains an invalid octet ($octet)"
             return 1
         fi
@@ -40,7 +40,7 @@ validate_port() {
         echo "ERROR: $name '$port' is not a number"
         return 1
     fi
-    if [[ "$port" -lt 1024 || "$port" -gt 65535 ]]; then
+    if [[ 10#$port -lt 1024 || 10#$port -gt 65535 ]]; then
         echo "ERROR: $name '$port' must be between 1024 and 65535"
         return 1
     fi
@@ -50,8 +50,8 @@ validate_port() {
 validate_https_port() {
     local http="$1"
     local https="$2"
-    local expected=$((http + 1))
-    if [[ "$https" -ne "$expected" ]]; then
+    local expected=$((10#$http + 1))
+    if [[ 10#$https -ne $expected ]]; then
         echo "ERROR: HTTPS_PORT ($https) must be HTTP_PORT ($http) + 1 (expected $expected)"
         return 1
     fi
