@@ -4,12 +4,13 @@
 
 Ejecuta Acestream dentro de un contenedor Docker sobre Ubuntu 22.04 + Python 3.10. Un solo script, un solo comando y tendrás un motor de streaming privado listo en tu máquina.
 
-## Novedades en v8.1.0
+## Novedades en v8.2.0
 
-- **Imagen más ligera** — ~40% más pequeña (1.19 GB → 729 MB).
-- **Verificación SHA256** — el tarball de Acestream incluido se verifica en tiempo de build.
-- **Script de instalación unificado** — `SetupAcestream.bat` pregunta el idioma al arrancar (español por defecto tras 5s). Pasa `--lang=en` o `--lang=es` para omitir el prompt.
-- `HEALTHCHECK` con fuente única y line endings LF vía `.gitattributes`.
+- **Reproductor web rediseñado** — guía clara la primera vez (qué pegar y dónde conseguir un enlace), indicador de carga mientras conecta el stream y errores en lenguaje sencillo. Inglés/Español.
+- **Mejoras de accesibilidad** — foco de teclado visible, controles etiquetados, contraste WCAG AA y viewport móvil.
+- **Frontend reforzado** — video.js 8.23.7 vía jsDelivr con Subresource Integrity y favicon inline autocontenido (sin peticiones a terceros).
+- **Apagado limpio** — el engine corre como PID 1 (`exec`), así `docker stop` lo termina correctamente.
+- **Actualización de dependencias** — `PyNaCl` y `requests` al día.
 
 ## Requisitos previos
 
