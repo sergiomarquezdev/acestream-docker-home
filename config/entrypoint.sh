@@ -108,12 +108,16 @@ except Exception as e:
 
 # === ACESTREAM ENGINE STARTUP ===
 echo "=== STARTING ACESTREAM ENGINE ==="
-echo "Command: /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} \"@/opt/acestream/acestream.conf\""
+echo "Command: exec /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} \"@/opt/acestream/acestream.conf\""
 
-# Add error handling for engine startup
-if ! /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"; then
-    echo "ERROR: Failed to start Acestream engine"
+# Pre-flight check so a missing binary yields a useful message (exec replaces this shell).
+if [ ! -x "/opt/acestream/start-engine" ]; then
+    echo "ERROR: /opt/acestream/start-engine is missing or not executable"
     echo "Configuration file contents:"
     cat /opt/acestream/acestream.conf
     exit 1
 fi
+
+# exec so the engine becomes PID 1: Docker's SIGTERM reaches it directly,
+# allowing a graceful shutdown instead of a SIGKILL after the stop timeout.
+exec /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"
