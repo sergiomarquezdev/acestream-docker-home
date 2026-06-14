@@ -16,8 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && pip install --no-cache-dir --prefix=/install \
     apsw==3.46.0.0 \
     lxml==5.2.2 \
-    PyNaCl==1.5.0 \
-    requests==2.32.3 \
+    PyNaCl==1.6.2 \
+    requests==2.34.2 \
     pycryptodome==3.20.0 \
     isodate==0.6.1 \
  && rm -rf /var/lib/apt/lists/*
