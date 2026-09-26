@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check Docker Hub credentials
         id: check
@@ -54,7 +54,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Upload SetupAcestream.bat if a release exists for this tag
         env:
