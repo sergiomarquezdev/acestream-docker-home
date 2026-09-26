@@ -14,6 +14,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # The engine bundles cp310-only wheels: the base must stay on ubuntu:22.04
+    # (Python 3.10). Newer Ubuntu releases break it (see docs/BUILD.md).
+    ignore:
+      - dependency-name: "ubuntu"
     groups:
       docker-minor-patch:
         update-types:
