@@ -1,7 +1,7 @@
 # ============================================================
 # Stage 1: Builder — compiles native Python modules
 # ============================================================
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ============================================================
 # Stage 2: Runtime — minimal image with only runtime deps
 # ============================================================
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 ARG IMAGE_VERSION=3.2.11
 
