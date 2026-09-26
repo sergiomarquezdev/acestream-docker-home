@@ -113,7 +113,7 @@ Unified bilingual script. Flow:
 6. Reuses an existing `acestream-engine_<port>` container's port if there is one (never two containers); otherwise finds a free port starting at 6878 (steps of 2). Writes **`acestream-compose.yml`** (git-ignored runtime artefact; never the committed `docker-compose.yml`) with `restart: unless-stopped` and log rotation.
 7. Pulls, prunes dangling images with `label=maintainer=sergiomarquezdev`, runs `up -d` once (no retry loop), prints the URLs and opens the browser.
 
-Sleeps use `ping -n N 127.0.0.1 >nul` (stdin-redirected `timeout.exe` fails). `echo !VAR!| findstr` must have **no space before the pipe** (the trailing space breaks `$` anchors).
+Sleeps use `ping -n N 127.0.0.1 >nul` (stdin-redirected `timeout.exe` fails). `echo !VAR!| findstr` must have **no space before the pipe** (the trailing space breaks `$` anchors). A literal `!` inside a string must be written `^!` (delayed expansion eats it). A port counts as busy only if `Get-NetTCPConnection -State Listen` finds it: grepping `netstat` also matches client/`TIME_WAIT` connections and the state name is localized (`ESCUCHANDO`).
 
 ### web/ (player)
 
@@ -132,7 +132,7 @@ Sleeps use `ping -n N 127.0.0.1 >nul` (stdin-redirected `timeout.exe` fails). `e
 `tests/test-features.bat` is the regression gate. There is no unit-test framework.
 
 - Non-interactive; exits with 0/1/2. Honours `ACESTREAM_IMAGE` to test a local build.
-- Six tests: default, memory and ram profiles; graceful stop (<10 s, exit 143/0); same-origin player; `SetupAcestream.bat --unattended` run twice leaves exactly one container.
+- Seven tests: default, memory and ram profiles; graceful stop (<10 s, exit 143/0); same-origin player with local assets; `SetupAcestream.bat --unattended` run twice leaves exactly one container; a foreign listener on 6878 makes it deploy on 6880.
 - Forces `%SystemRoot%\System32` first on `PATH` and uses `ping -n N 127.0.0.1 >nul` as the sleep primitive. This is so the script runs cleanly from `cmd.exe` **and** from Git Bash / MSYS, where coreutils can shadow `timeout`/`findstr` and stdin-redirected `timeout.exe` fails outright.
 - `waitHealthy` subroutine polls `docker inspect .State.Health.Status` with a 75 s budget.
 - Profile tests start the specific profile service by name to dodge the base-service port race documented above.

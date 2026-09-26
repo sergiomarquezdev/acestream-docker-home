@@ -8,7 +8,11 @@
 
 Ejecuta Acestream Engine 3.2.11 dentro de Docker y mira streams desde el navegador. En Windows, un solo script lo hace todo: arranca Docker, descarga la imagen, lanza el motor y abre el reproductor web.
 
-## Novedades de v8.3.0
+## Novedades de v8.3.1
+
+- **El script de instalación mantiene el puerto 6878**: ya no salta al 6880 justo después de usar el reproductor (confundía conexiones recientes con un puerto ocupado); solo cuenta un proceso que escuche de verdad. El mensaje de despedida vuelve a mostrar su "!".
+
+### v8.3.0
 
 - **Apagado limpio y rápido**: `tini` pasa a ser el PID 1. El motor ignora SIGTERM cuando es él mismo el PID 1, así que cada `docker stop` esperaba al timeout y lo mataba (el cambio a `exec` de v8.2.0 no lo resolvía). Ahora se detiene en un segundo.
 - **Imagen un 25 % más ligera**: de 730 MB a 541 MB (sin pip/setuptools/wheel/wget en runtime y sin el tarball del motor en ninguna capa).

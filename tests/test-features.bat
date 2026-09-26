@@ -267,6 +267,38 @@ docker network rm %COMPOSE_PROJECT_NAME%_default >nul 2>&1
 echo.
 
 REM ===============================================
+REM TEST 7 - SetupAcestream.bat skips a port that is really in use
+REM ===============================================
+REM A foreign listener on 6878 must push the script to 6880. (Client/TIME_WAIT
+REM connections to 6878 left by earlier tests must NOT count as "in use".)
+echo [TEST 7] SetupAcestream.bat picks the next port when 6878 is taken
+docker run -d --name acestream-port-blocker -p 6878:6878 !IMAGE! >nul 2>&1
+if !errorlevel! neq 0 goto :t7_fail
+
+call "%~dp0..\SetupAcestream.bat" --unattended --lang=en
+if !errorlevel! neq 0 goto :t7_fail
+
+docker inspect acestream-engine_6880 >nul 2>&1
+if !errorlevel! neq 0 goto :t7_fail
+call :waitHealthy acestream-engine_6880
+if !errorlevel! neq 0 goto :t7_fail
+
+echo    [PASS] port 6878 busy, deployed acestream-engine_6880
+set /a PASS+=1
+goto :t7_end
+:t7_fail
+echo    [FAIL] see 'docker ps -a' ^(expected acestream-engine_6880 while 6878 is taken^)
+set /a FAIL+=1
+:t7_end
+docker rm -f acestream-port-blocker >nul 2>&1
+for /f "usebackq delims=" %%N in (`docker ps -a --format "{{.Names}}" 2^>nul ^| findstr /B /I "acestream-engine_"`) do (
+    docker rm %%N -f >nul 2>&1
+)
+del /f /q "%~dp0..\acestream-compose.yml" >nul 2>&1
+docker network rm %COMPOSE_PROJECT_NAME%_default >nul 2>&1
+echo.
+
+REM ===============================================
 REM SUMMARY
 REM ===============================================
 echo ================================================

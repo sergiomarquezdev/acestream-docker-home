@@ -8,7 +8,11 @@
 
 Run the Acestream Engine 3.2.11 inside Docker and watch streams from your browser. On Windows, one script does everything: it starts Docker, pulls the image, runs the engine and opens the web player.
 
-## What's new in v8.3.0
+## What's new in v8.3.1
+
+- **Setup script keeps port 6878**: it no longer moves to 6880 right after the player was used (recent client connections were mistaken for a busy port); only a real listener counts. The farewell message shows its "!" again.
+
+### v8.3.0
 
 - **Clean, fast shutdown**: `tini` now runs as PID 1. The engine ignores SIGTERM when it is PID 1 itself, so every `docker stop` used to wait for the timeout and kill it (v8.2.0's `exec` change did not fix this). It now stops in about a second.
 - **25% smaller image**: 730 MB → 541 MB (no pip/setuptools/wheel/wget at runtime, and the engine tarball no longer lands in an image layer).

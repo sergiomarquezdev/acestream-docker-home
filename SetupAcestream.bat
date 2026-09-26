@@ -139,7 +139,7 @@ if /I "!LANG_CHOICE!"=="es" (
     set "MSG_BROWSER_PREP=Preparando la reproducción del stream Acestream..."
     set "MSG_FAREWELL_HEADER=[Despedida]"
     set "MSG_FAREWELL_THANKS=Gracias por utilizar el asistente de configuración de Acestream x Docker."
-    set "MSG_FAREWELL_ENJOY=¡Esperamos que disfrutes de una excelente experiencia de streaming!"
+    set "MSG_FAREWELL_ENJOY=¡Esperamos que disfrutes de una excelente experiencia de streaming^!"
     set "MSG_FAREWELL_FINAL=Finalizando el script y restaurando el entorno..."
 ) else (
     set "MSG_CHECK_DOCKER=Checking Docker..."
@@ -185,7 +185,7 @@ if /I "!LANG_CHOICE!"=="es" (
     set "MSG_BROWSER_PREP=Preparing the Acestream stream playback..."
     set "MSG_FAREWELL_HEADER=[Farewell]"
     set "MSG_FAREWELL_THANKS=Thank you for using the Acestream x Docker setup assistant."
-    set "MSG_FAREWELL_ENJOY=We hope you enjoy an excellent streaming experience!"
+    set "MSG_FAREWELL_ENJOY=We hope you enjoy an excellent streaming experience^!"
     set "MSG_FAREWELL_FINAL=Finalizing the script and restoring the environment..."
 )
 
@@ -341,7 +341,10 @@ if !PORT! GTR %MAX_PORT% (
     chcp !ORIG_CP! >nul
     exit /b 1
 )
-netstat -ano | findstr /R /C:":!PORT!\>" >nul 2>&1
+:: Only a socket in LISTEN state means the port is taken. A plain netstat grep
+:: also matches TIME_WAIT/client connections to the port (e.g. right after the
+:: player was used), and netstat localizes the state name (ESCUCHANDO).
+powershell -NoProfile -Command "if (Get-NetTCPConnection -State Listen -LocalPort !PORT! -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >nul 2>&1
 if !errorlevel! == 0 (
     echo Port !PORT! !MSG_PORT_OCCUPIED_EXT!
     set /a "PORT+=2"

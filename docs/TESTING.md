@@ -39,8 +39,9 @@ CI (`.github/workflows/ci.yml`) runs the Linux-side equivalent on every push and
 2. **Memory profile:** starts `acestream-memory`, verifies logs contain `--live-cache-type memory`.
 3. **RAM profile:** starts `acestream-ram`, verifies `df -h` output contains `ACEStream`. Skipped if WSL2 is not detected.
 4. **Graceful stop:** starts the default profile, waits for healthy, then runs `docker stop` and asserts it completes in under 10s with the container exit code being `143` (SIGTERM) or `0`. Verifies tini (PID 1) forwards the stop signal correctly.
-5. **Same-origin player:** fetches `/webui/player/`, asserts the HTML references `/ace/manifest.m3u8` (same-origin) and does **not** contain a baked-in `127.0.0.1:6878` absolute URL.
+5. **Same-origin player:** fetches `/webui/player/` and `/webui/html/player.js`; asserts the page loads its script and video.js locally (no `cdn.jsdelivr.net`), the script requests `/ace/manifest.m3u8` (same-origin), and neither contains a baked-in `127.0.0.1:6878`.
 6. **SetupAcestream.bat end-to-end:** runs `SetupAcestream.bat --unattended --lang=en` twice in a row (honouring `ACESTREAM_IMAGE`) and asserts there is exactly one `acestream-engine_*` container afterwards, proving the "reuse existing container" logic prevents port/container duplication on re-run.
+7. **Busy port:** starts a foreign container on port 6878, runs `SetupAcestream.bat --unattended` and asserts it deploys `acestream-engine_6880` (healthy). Only sockets in LISTEN state count as busy; the client/`TIME_WAIT` connections left by earlier tests must not push the script off 6878.
 
 ### Exit Codes
 
