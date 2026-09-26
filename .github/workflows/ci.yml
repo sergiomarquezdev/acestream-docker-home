@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Shellcheck entrypoint.sh
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/mnt:ro" \
+            koalaman/shellcheck:stable /mnt/config/entrypoint.sh
+
+      - name: Hadolint Dockerfile
+        run: |
+          docker run --rm -i hadolint/hadolint:latest < Dockerfile
+
+      - name: Actionlint workflows
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/repo:ro" --workdir /repo \
+            rhysd/actionlint:latest -color
+
+  build-and-test:
+    name: Build and smoke test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: acestream-engine:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container
+        run: |
+          docker run -d --name acestream-ci \
+            -p 6878:6878 -p 6879:6879 \
+            -e HTTP_PORT=6878 -e HTTPS_PORT=6879 \
+            acestream-engine:ci
+
+      - name: Wait for healthy status (<=90s)
+        run: |
+          for attempt in $(seq 1 18); do
+            status=$(docker inspect --format='{{.State.Health.Status}}' acestream-ci)
+            echo "attempt ${attempt}: status=${status}"
+            if [ "$status" = "healthy" ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Container did not become healthy within 90s"
+          docker logs acestream-ci
+          exit 1
+
+      - name: Assert get_version reports 3.2.11
+        run: |
+          version=$(docker exec acestream-ci python3 -c "
+          import json, urllib.request
+          d = json.load(urllib.request.urlopen('http://127.0.0.1:6878/webui/api/service?method=get_version', timeout=10))
+          print(d['result']['version'])
+          ")
+          echo "engine version: $version"
+          test "$version" = "3.2.11"
+
+      - name: Assert /webui/player/ is served
+        run: |
+          code=$(docker exec acestream-ci python3 -c "
+          import urllib.request
+          r = urllib.request.urlopen('http://127.0.0.1:6878/webui/player/', timeout=10)
+          print(r.status)
+          ")
+          echo "player status: $code"
+          test "$code" = "200"
+
+      - name: Stop container and assert graceful shutdown (<10s, exit 0/143)
+        run: |
+          start=$(date +%s)
+          docker stop --time 10 acestream-ci
+          end=$(date +%s)
+          elapsed=$((end - start))
+          exit_code=$(docker inspect --format='{{.State.ExitCode}}' acestream-ci)
+          echo "stop took ${elapsed}s, exit code ${exit_code}"
+          test "$elapsed" -lt 10
+          { test "$exit_code" = "143"; } || { test "$exit_code" = "0"; }
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f acestream-ci || true
