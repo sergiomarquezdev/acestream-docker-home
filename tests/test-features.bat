@@ -6,6 +6,11 @@ REM Automated smoke test for Acestream Docker.
 REM Non-interactive: no user prompts, safe for CI-style runs.
 REM Run from the repo root with Docker Desktop already running.
 REM
+REM Honours ACESTREAM_IMAGE to test a local build, e.g.:
+REM   set ACESTREAM_IMAGE=acestream-engine:latest
+REM   tests\test-features.bat
+REM Defaults to the published Docker Hub image when unset.
+REM
 REM Exit codes:
 REM   0 - all tests passed (or skipped because of missing WSL2)
 REM   1 - at least one test failed
@@ -17,7 +22,15 @@ REM 'findstr' binaries, even when invoked from a POSIX shell (MSYS / Git
 REM Bash) where coreutils may shadow them.
 set "PATH=%SystemRoot%\System32;%SystemRoot%;%PATH%"
 
-set "IMAGE=smarquezp/docker-acestream-ubuntu-home:latest"
+REM Fixed Compose project name so the network name does not depend on the
+REM folder the repo was cloned into (cleanup below removes it by name).
+set "COMPOSE_PROJECT_NAME=acestream-smoke"
+
+if defined ACESTREAM_IMAGE (
+    set "IMAGE=%ACESTREAM_IMAGE%"
+) else (
+    set "IMAGE=smarquezp/docker-acestream-ubuntu-home:latest"
+)
 set "WAIT_HEALTHY=75"
 set "PASS=0"
 set "FAIL=0"
@@ -25,6 +38,7 @@ set "SKIP=0"
 
 echo ================================================
 echo   ACESTREAM DOCKER - SMOKE TEST
+echo   Image under test: !IMAGE!
 echo ================================================
 echo.
 
@@ -60,6 +74,11 @@ echo.
 
 REM === Ensure a clean slate ===
 docker-compose --profile ram --profile memory down --remove-orphans >nul 2>&1
+for /f "usebackq delims=" %%N in (`docker ps -a --format "{{.Names}}" 2^>nul ^| findstr /B /I "acestream-engine_"`) do (
+    docker stop %%N >nul 2>&1
+    docker rm %%N -f >nul 2>&1
+)
+del /f /q "%~dp0..\acestream-compose.yml" >nul 2>&1
 
 REM ===============================================
 REM TEST 1 - default profile (disk cache)
@@ -135,6 +154,116 @@ set /a FAIL+=1
 :t3_cleanup
 docker-compose --profile ram down >nul 2>&1
 :t3_end
+echo.
+
+REM ===============================================
+REM TEST 4 - graceful stop (tini as PID 1 forwards SIGTERM)
+REM ===============================================
+echo [TEST 4] graceful stop ^(docker stop ^< 10s, exit code 143 or 0^)
+docker-compose up -d
+if !errorlevel! neq 0 goto :t4_fail
+
+call :waitHealthy acestream-engine
+if !errorlevel! neq 0 goto :t4_fail
+
+set "STOP_SECONDS="
+for /f "usebackq delims=" %%R in (`powershell -NoProfile -Command "$sw=[Diagnostics.Stopwatch]::StartNew(); docker stop acestream-engine | Out-Null; $sw.Stop(); [int][Math]::Ceiling($sw.Elapsed.TotalSeconds)" 2^>nul`) do set "STOP_SECONDS=%%R"
+if not defined STOP_SECONDS goto :t4_fail
+if !STOP_SECONDS! geq 10 goto :t4_fail
+
+set "STOP_EXITCODE="
+for /f "usebackq delims=" %%R in (`docker inspect acestream-engine --format "{{.State.ExitCode}}" 2^>nul`) do set "STOP_EXITCODE=%%R"
+if "!STOP_EXITCODE!"=="143" goto :t4_pass
+if "!STOP_EXITCODE!"=="0" goto :t4_pass
+goto :t4_fail
+
+:t4_pass
+echo    [PASS] stopped in !STOP_SECONDS!s with exit code !STOP_EXITCODE!
+set /a PASS+=1
+goto :t4_end
+:t4_fail
+echo    [FAIL] stop took too long or exited with an unexpected code (STOP_SECONDS=!STOP_SECONDS! STOP_EXITCODE=!STOP_EXITCODE!)
+set /a FAIL+=1
+:t4_end
+docker-compose down >nul 2>&1
+echo.
+
+REM ===============================================
+REM TEST 5 - player served same-origin (no baked-in 127.0.0.1:6878)
+REM ===============================================
+echo [TEST 5] player served at /webui/player/ is same-origin
+docker-compose up -d
+if !errorlevel! neq 0 goto :t5_fail
+
+call :waitHealthy acestream-engine
+if !errorlevel! neq 0 goto :t5_fail
+
+REM The page must load its script and video.js locally (no CDN), and the
+REM script must request the stream with a same-origin path.
+curl -s "http://127.0.0.1:6878/webui/player/" > "%TEMP%\acestream_player_test.html" 2>nul
+curl -s "http://127.0.0.1:6878/webui/html/player.js" > "%TEMP%\acestream_player_test.js" 2>nul
+findstr /C:"/webui/html/player.js" "%TEMP%\acestream_player_test.html" >nul
+if !errorlevel! neq 0 goto :t5_fail_cleanup
+findstr /C:"/webui/vendor/videojs/video.min.js" "%TEMP%\acestream_player_test.html" >nul
+if !errorlevel! neq 0 goto :t5_fail_cleanup
+findstr /C:"cdn.jsdelivr.net" "%TEMP%\acestream_player_test.html" >nul
+if !errorlevel! == 0 goto :t5_fail_cleanup
+findstr /C:"/ace/manifest.m3u8" "%TEMP%\acestream_player_test.js" >nul
+if !errorlevel! neq 0 goto :t5_fail_cleanup
+findstr /C:"127.0.0.1:6878" "%TEMP%\acestream_player_test.html" "%TEMP%\acestream_player_test.js" >nul
+if !errorlevel! == 0 goto :t5_fail_cleanup
+
+echo    [PASS] player uses local assets and same-origin /ace/manifest.m3u8, no baked-in 127.0.0.1:6878
+set /a PASS+=1
+del /f /q "%TEMP%\acestream_player_test.html" "%TEMP%\acestream_player_test.js" >nul 2>&1
+goto :t5_end
+:t5_fail_cleanup
+del /f /q "%TEMP%\acestream_player_test.html" "%TEMP%\acestream_player_test.js" >nul 2>&1
+:t5_fail
+echo    [FAIL] see '%TEMP%\acestream_player_test.html' (deleted) or 'docker logs acestream-engine'
+set /a FAIL+=1
+:t5_end
+docker-compose down >nul 2>&1
+echo.
+
+REM ===============================================
+REM TEST 6 - SetupAcestream.bat --unattended end-to-end (run twice)
+REM ===============================================
+echo [TEST 6] SetupAcestream.bat --unattended, run twice ^(single container^)
+call "%~dp0..\SetupAcestream.bat" --unattended --lang=en
+set "T6_ERR1=!errorlevel!"
+if not "!T6_ERR1!"=="0" goto :t6_fail
+
+set "T6_CONTAINER="
+for /f "usebackq delims=" %%N in (`docker ps -a --format "{{.Names}}" 2^>nul ^| findstr /B /I "acestream-engine_"`) do (
+    if not defined T6_CONTAINER set "T6_CONTAINER=%%N"
+)
+if not defined T6_CONTAINER goto :t6_fail
+
+call :waitHealthy !T6_CONTAINER!
+if !errorlevel! neq 0 goto :t6_fail
+
+call "%~dp0..\SetupAcestream.bat" --unattended --lang=en
+set "T6_ERR2=!errorlevel!"
+if not "!T6_ERR2!"=="0" goto :t6_fail
+
+set "T6_COUNT=0"
+for /f "usebackq delims=" %%N in (`docker ps -a --format "{{.Names}}" 2^>nul ^| findstr /B /I "acestream-engine_"`) do set /a T6_COUNT+=1
+if not "!T6_COUNT!"=="1" goto :t6_fail
+
+echo    [PASS] exactly one acestream-engine_* container after two runs
+set /a PASS+=1
+goto :t6_end
+:t6_fail
+echo    [FAIL] see 'docker ps -a' ^(expected exactly one acestream-engine_* container^)
+set /a FAIL+=1
+:t6_end
+for /f "usebackq delims=" %%N in (`docker ps -a --format "{{.Names}}" 2^>nul ^| findstr /B /I "acestream-engine_"`) do (
+    docker stop %%N >nul 2>&1
+    docker rm %%N -f >nul 2>&1
+)
+del /f /q "%~dp0..\acestream-compose.yml" >nul 2>&1
+docker network rm %COMPOSE_PROJECT_NAME%_default >nul 2>&1
 echo.
 
 REM ===============================================

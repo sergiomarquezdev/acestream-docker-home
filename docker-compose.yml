@@ -1,12 +1,19 @@
 services:
   acestream-engine:
-    image: smarquezp/docker-acestream-ubuntu-home:latest
+    image: ${ACESTREAM_IMAGE:-smarquezp/docker-acestream-ubuntu-home:latest}
     container_name: acestream-engine
+    restart: unless-stopped
     ports:
-      - 6878:6878
+      - ${HTTP_PORT:-6878}:${HTTP_PORT:-6878}
     environment:
-      - HTTP_PORT=6878
-      - HTTPS_PORT=6879
+      - HTTP_PORT=${HTTP_PORT:-6878}
+      - HTTPS_PORT=${HTTPS_PORT:-6879}
+      - ACESTREAM_EXTRA_FLAGS=${ACESTREAM_EXTRA_FLAGS:-}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     # Healthcheck defined in Dockerfile (single source of truth)
 
   acestream-ram:
@@ -14,24 +21,15 @@ services:
       service: acestream-engine
     container_name: acestream-engine-ram
     profiles: ["ram"]
-    ports:
-      - 6878:6878
     tmpfs:
       - /root/.ACEStream/.acestream_cache:rw,noexec,nosuid,size=8g
 
-  # Memory cache mode: Uses Acestream's native memory cache
-  # Note: environment vars are duplicated here because Docker Compose
-  # replaces (not merges) the parent's environment when using 'extends'.
-  # This is intentional to add ACESTREAM_EXTRA_FLAGS while preserving
-  # backward compatibility (no 'default' profile on base service).
+  # Memory cache mode: Acestream's native in-memory live cache.
+  # 'extends' merges environment by key, so only the override is needed.
   acestream-memory:
     extends:
       service: acestream-engine
     container_name: acestream-engine-memory
     profiles: ["memory"]
-    ports:
-      - 6878:6878
     environment:
-      - HTTP_PORT=6878
-      - HTTPS_PORT=6879
       - ACESTREAM_EXTRA_FLAGS=--live-cache-type memory
