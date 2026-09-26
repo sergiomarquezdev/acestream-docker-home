@@ -434,8 +434,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const app = {
                 // --- CONFIGURATION ---
-                // NOTE: This URL is rewritten by the startup script (entrypoint.sh) with the real IP and port.
-                BASE_STREAM_URL: `http://127.0.0.1:6878/ace/manifest.m3u8?transcode_audio=1&id=`,
+                // Same-origin path: the engine serves this page, so it works for any host, IP or port.
+                BASE_STREAM_URL: '/ace/manifest.m3u8?transcode_audio=1&id=',
                 ACESTREAM_PREFIX: "acestream://",
                 DEFAULT_LANG: 'en',
 

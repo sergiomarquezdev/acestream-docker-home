@@ -56,30 +56,32 @@ docker push smarquezp/docker-acestream-ubuntu-home:latest
 
 ### Dockerfile
 
-Single heavy RUN layer:
+Multi-stage build:
 
-1. `apt-get install` the full runtime **plus** the build toolchain (`build-essential`, `python3-dev`, `lib{sqlite3,xml2,xslt1}-dev`).
-2. `pip install` the native modules (`lxml`, `apsw`, `PyNaCl`, `pycryptodome`, `requests`, `isodate`).
-3. `apt-get purge --auto-remove` the whole toolchain.
-4. **Reinstall** `libxml2`, `libxslt1.1`, `libsqlite3-0` explicitly — these are the runtime-only flavors the C extensions dlopen at import time; `--auto-remove` will otherwise drop them as orphaned dev deps.
-5. `rm -rf /var/lib/apt/lists/*`.
+1. **Builder** (`ubuntu:22.04 AS builder`): build toolchain + `pip install --prefix=/install` of the pinned native modules (`lxml`, `apsw`, `PyNaCl`, `pycryptodome`, `requests`, `isodate`). Ubuntu's pip lays them out under `/install/local/lib/python3.10/dist-packages`.
+2. **Runtime** (`ubuntu:22.04`): runtime-only apt packages (`python3`, `libpython3.10`, the `python3-{greenlet,gevent,psutil,simplejson}` debs, `libxml2`, `libxslt1.1`, `libsqlite3-0`, `procps`, `tini`) and a `COPY --from=builder` of the dist-packages. No `pip`/`setuptools`/`wheel`/`wget` at runtime: the engine never uses them.
 
-Result: **729 MB** image. Multi-stage was considered and rejected (Ubuntu+apt forces you to reinstall runtime deps in the final stage anyway, so the complexity buys little).
+Result: **~546 MB** image.
 
-The Acestream tarball is copied and extracted in its own RUN, guarded by a SHA256 check:
+**Python 3.10 is a hard constraint**, not a style choice: the engine tarball bundles `cp310`-only wheels and its `.so` files link `libpython3.10`. Do not bump the base to `ubuntu:24.04` without a matching upstream engine.
+
+The Acestream tarball is **bind-mounted** (not `COPY`'d) into the RUN that verifies and extracts it, so the 77 MB archive never lands in an image layer:
 
 ```dockerfile
 ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
-RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check && tar --extract ...
+RUN --mount=type=bind,source=resources/acestream.tar.gz,target=/tmp/acestream.tar.gz \
+    echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check && tar --extract ...
 ```
 
-A mismatched archive fails the build immediately.
+A mismatched archive fails the build immediately. `RUN --mount` needs BuildKit (default in Docker Desktop / Engine 23+).
 
 ### Startup flow
 
-1. `ENTRYPOINT ["/entrypoint.sh"]` fires.
-2. `config/entrypoint.sh` validates `INTERNAL_IP` / `HTTP_PORT` / `HTTPS_PORT`, patches `/opt/acestream/data/webui/html/player.html` with the real IP:port via `sed`, and `exec`s `/opt/acestream/start-engine` with `${ACESTREAM_EXTRA_FLAGS}` appended (this is how the `memory` profile injects `--live-cache-type memory`).
+1. `ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/entrypoint.sh"]` fires. **tini is required**: the engine ignores SIGTERM when it is PID 1, so without it every `docker stop` waits the full timeout and ends in SIGKILL (exit 137). `-g` is needed because `/opt/acestream/start-engine` is a `sh` wrapper that does not `exec`, leaving the engine as a grandchild.
+2. `config/entrypoint.sh` validates `HTTP_PORT` / `HTTPS_PORT` and `exec`s `/opt/acestream/start-engine` with `${ACESTREAM_EXTRA_FLAGS}` appended (this is how the `memory` profile injects `--live-cache-type memory`).
 3. `HEALTHCHECK` polls the in-container API `get_version` every 30s (start period 40s, 3 retries).
+
+The player needs no runtime patching: it is served by the engine itself and requests the stream with a same-origin path (`/ace/manifest.m3u8?...`), so it works for any host, IP or port. There is no `INTERNAL_IP` in the container contract.
 
 ### docker-compose.yml
 
@@ -97,12 +99,12 @@ Unified bilingual script. Flow:
 1. Parses `--auto-clean` / `--lang=en|es` flags.
 2. If no `--lang`, shows a bilingual prompt (`[1] Español (default)`, `[2] English`) with a 5 s timeout defaulting to **Spanish**. This is the flow non-technical users hit when they double-click.
 3. Loads all user-visible strings into `MSG_*` vars according to the language; comments and logs stay English for consistency with the rest of the repo.
-4. Detects a non-loopback IPv4, finds a free port pair starting at 6878/6879, and **writes a dynamic docker-compose.yml** with a service named `acestream-engine_<port>` (e.g. `acestream-engine_6880` when 6878 is taken). This generated file is a runtime artefact — when present, it overrides the committed `docker-compose.yml`.
+4. `cd /d "%~dp0"` so an elevated (UAC) launch does not write into `System32`. Detects a non-loopback IPv4 (only used to open the browser / show the LAN URL; it is not passed to the container), finds a free port pair starting at 6878/6879, and **writes a dynamic docker-compose.yml** with a service named `acestream-engine_<port>` (e.g. `acestream-engine_6880` when 6878 is taken). This generated file is a runtime artefact — when present, it overrides the committed `docker-compose.yml`.
 5. Pulls the image, optionally cleans obsolete image IDs, runs `docker-compose up -d`, and opens the browser.
 
 ### web/player.html
 
-Custom player UI with English/Spanish toggle, copied over the stock one during build. The entrypoint patches absolute URLs to use the runtime IP/port.
+Custom player UI with English/Spanish toggle, copied over the stock one during build. Stream URLs are same-origin relative paths; nothing patches the file at runtime.
 
 ## Conventions specific to this repo
 

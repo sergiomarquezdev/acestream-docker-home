@@ -5,7 +5,6 @@ services:
     ports:
       - 6878:6878
     environment:
-      - INTERNAL_IP=127.0.0.1
       - HTTP_PORT=6878
       - HTTPS_PORT=6879
     # Healthcheck defined in Dockerfile (single source of truth)
@@ -33,7 +32,6 @@ services:
     ports:
       - 6878:6878
     environment:
-      - INTERNAL_IP=127.0.0.1
       - HTTP_PORT=6878
       - HTTPS_PORT=6879
       - ACESTREAM_EXTRA_FLAGS=--live-cache-type memory

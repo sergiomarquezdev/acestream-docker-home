@@ -33,14 +33,16 @@ LABEL maintainer="sergiomarquezdev" \
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-ENV INTERNAL_IP="127.0.0.1"
 ENV HTTP_PORT="6878"
 ENV HTTPS_PORT="6879"
 
-# Install ONLY runtime packages
+# Install ONLY runtime packages.
+# Python stays at 3.10 (ubuntu:22.04): the engine bundles cp310-only wheels.
+# tini runs as PID 1: the engine ignores SIGTERM when it is PID 1 itself,
+# so `docker stop` would otherwise always wait for the timeout and SIGKILL.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget procps \
-    python3 libpython3.10 python3-pip python3-setuptools python3-wheel \
+    procps tini \
+    python3 libpython3.10 \
     python3-greenlet python3-gevent python3-psutil python3-simplejson \
     libxml2 libxslt1.1 libsqlite3-0 \
  && rm -rf /var/lib/apt/lists/*
@@ -53,13 +55,13 @@ COPY --from=builder /install/local/lib/python3.10/dist-packages /usr/local/lib/p
 COPY config/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Verify and extract Acestream tarball
+# Verify and extract Acestream tarball.
+# Bind-mounted instead of COPY'd so the archive never lands in an image layer.
 ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
-COPY resources/acestream.tar.gz /tmp/acestream.tar.gz
-RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check \
+RUN --mount=type=bind,source=resources/acestream.tar.gz,target=/tmp/acestream.tar.gz \
+    echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check \
     && mkdir -p /opt/acestream \
-    && tar --extract --gzip --directory /opt/acestream --file /tmp/acestream.tar.gz \
-    && rm /tmp/acestream.tar.gz
+    && tar --extract --gzip --directory /opt/acestream --file /tmp/acestream.tar.gz
 
 # Overlay custom player and config
 COPY web/player.html /opt/acestream/data/webui/html/player.html
@@ -70,4 +72,6 @@ EXPOSE 6878
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
     CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${HTTP_PORT}/webui/api/service?method=get_version', timeout=5)" || exit 1
 
-ENTRYPOINT ["/entrypoint.sh"]
+# -g forwards signals to the whole process group: start-engine is a sh
+# wrapper that does not exec, so the engine is a grandchild of tini.
+ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/entrypoint.sh"]

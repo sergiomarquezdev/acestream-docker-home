@@ -2,25 +2,28 @@
 
 ## Base Image
 
-`ubuntu:22.04` with Python 3.10.
+`ubuntu:22.04` with Python 3.10. This is a hard constraint: the engine tarball bundles `cp310`-only wheels and links `libpython3.10`.
 
 ## Build Strategy
 
 The Dockerfile uses a multi-stage build:
 
 1. **Builder stage** (`ubuntu:22.04 AS builder`): installs the build toolchain and compiles native Python modules (`lxml`, `apsw`, etc.) to `/install`.
-2. **Runtime stage** (`ubuntu:22.04`): copies only the compiled packages and installs runtime-only libraries (`libxml2`, `libxslt1.1`, `libsqlite3-0`).
+2. **Runtime stage** (`ubuntu:22.04`): copies only the compiled packages and installs runtime-only packages (`python3`, `libxml2`, `libxslt1.1`, `libsqlite3-0`, `tini`, ...). `pip`, `setuptools`, `wheel` and `wget` are not installed: the engine does not use them at runtime.
 
-Previously, a single-stage build with an in-layer purge was used. The multi-stage approach was adopted because it completely removes the build toolchain from the final image history (not just from the layer content), reducing the attack surface. Image size remains approximately the same (~729 MB) because Ubuntu runtime libraries must still be installed in the final stage.
+The build toolchain never reaches the final image history, reducing the attack surface.
 
 ## SHA256 Integrity Check
 
-The bundled `resources/acestream.tar.gz` is verified at build time:
+The bundled `resources/acestream.tar.gz` is bind-mounted into the build step (so it is not stored in any image layer) and verified before extraction:
 
 ```dockerfile
 ARG ACESTREAM_SHA256=9b6bbd76a55e5a434641afae3b9cf8e6154ce1cf392152ec3aed5ac265432b2e
-RUN echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check
+RUN --mount=type=bind,source=resources/acestream.tar.gz,target=/tmp/acestream.tar.gz \
+    echo "${ACESTREAM_SHA256}  /tmp/acestream.tar.gz" | sha256sum --check && ...
 ```
+
+`RUN --mount` requires BuildKit, the default builder in Docker Desktop and Docker Engine 23+.
 
 To update Acestream: replace the tarball, compute the new SHA256, and pass it as a build argument:
 
@@ -34,4 +37,4 @@ The Acestream tarball (`resources/acestream.tar.gz`) is bundled in the repositor
 
 ## Image Size
 
-~729 MB. The build toolchain is completely absent from the final image history thanks to the multi-stage build.
+~546 MB.

@@ -2,15 +2,18 @@
 
 ## Startup Flow
 
-1. Docker starts the container with `ENTRYPOINT ["/entrypoint.sh"]`.
-2. `entrypoint.sh` validates `INTERNAL_IP`, `HTTP_PORT`, `HTTPS_PORT`.
-3. If present, `player.html` is patched via `sed` to point to `${INTERNAL_IP}:${HTTP_PORT}`.
-4. The engine starts via `/opt/acestream/start-engine` with configured ports and flags.
-5. Docker `HEALTHCHECK` begins polling after a 40-second start period.
+1. Docker starts the container with `ENTRYPOINT ["/usr/bin/tini", "-g", "--", "/entrypoint.sh"]`.
+2. `entrypoint.sh` validates `HTTP_PORT` and `HTTPS_PORT`.
+3. The engine starts via `/opt/acestream/start-engine` with configured ports and flags.
+4. Docker `HEALTHCHECK` begins polling after a 40-second start period.
 
-## Why sed on player.html?
+## Why tini?
 
-The internal IP is not known at build time; it is only known at container startup. The entrypoint injects it dynamically.
+The engine ignores SIGTERM when it runs as PID 1, so `docker stop` would always wait for the full timeout and then SIGKILL it. tini runs as PID 1 and, with `-g`, forwards the signal to the whole process group (`start-engine` is a `sh` wrapper that does not `exec`, so the engine is a grandchild).
+
+## Player URLs
+
+`player.html` is served by the engine itself and requests streams with a same-origin path (`/ace/manifest.m3u8?...`). It works for any host, IP or port without runtime patching.
 
 ## Cache Profiles
 

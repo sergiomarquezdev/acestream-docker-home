@@ -8,27 +8,6 @@
 set -e  # Exit on any error
 
 # === VALIDATION HELPERS ===
-validate_ip() {
-    local ip="$1"
-    if [[ -z "$ip" ]]; then
-        echo "ERROR: INTERNAL_IP is empty"
-        return 1
-    fi
-    if ! [[ "$ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        echo "ERROR: INTERNAL_IP '$ip' is not a valid IPv4 address"
-        return 1
-    fi
-    local IFS='.'
-    read -ra octets <<< "$ip"
-    for octet in "${octets[@]}"; do
-        if [[ 10#$octet -lt 0 || 10#$octet -gt 255 ]]; then
-            echo "ERROR: INTERNAL_IP '$ip' contains an invalid octet ($octet)"
-            return 1
-        fi
-    done
-    return 0
-}
-
 validate_port() {
     local port="$1"
     local name="$2"
@@ -61,7 +40,6 @@ validate_https_port() {
 # === LOGGING SETUP ===
 echo "=== ACESTREAM DOCKER STARTUP ==="
 echo "Timestamp: $(date)"
-echo "Internal IP: ${INTERNAL_IP}"
 echo "HTTP Port: ${HTTP_PORT}"
 echo "HTTPS Port: ${HTTPS_PORT}"
 echo "Extra Flags: ${ACESTREAM_EXTRA_FLAGS:-none}"
@@ -69,7 +47,6 @@ echo "Extra Flags: ${ACESTREAM_EXTRA_FLAGS:-none}"
 # === CONFIGURATION VALIDATION ===
 echo "=== VALIDATING CONFIGURATION ==="
 
-validate_ip "${INTERNAL_IP}" || exit 1
 validate_port "${HTTP_PORT}" "HTTP_PORT" || exit 1
 validate_port "${HTTPS_PORT}" "HTTPS_PORT" || exit 1
 validate_https_port "${HTTP_PORT}" "${HTTPS_PORT}" || exit 1
@@ -81,30 +58,6 @@ if [ ! -f "/opt/acestream/acestream.conf" ]; then
 fi
 
 echo "Configuration validation: OK"
-
-# === PLAYER HTML CONFIGURATION ===
-echo "=== CONFIGURING PLAYER HTML ==="
-if [ -f "/opt/acestream/data/webui/html/player.html" ]; then
-    sed -i "s|http://127.0.0.1:6878/|http://${INTERNAL_IP}:${HTTP_PORT}/|g" /opt/acestream/data/webui/html/player.html
-    echo "Player HTML configured successfully"
-else
-    echo "WARNING: player.html not found, skipping configuration"
-fi
-
-# === VERIFY ENGINE BINDS TO INTERNAL_IP ===
-echo "=== VERIFYING NETWORK BIND ==="
-python3 -c "
-import socket, sys
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(5)
-    s.bind(('${INTERNAL_IP}', ${HTTP_PORT}))
-    s.close()
-    print('Network bind test: OK')
-except Exception as e:
-    print(f'WARNING: Cannot bind to ${INTERNAL_IP}:${HTTP_PORT}: {e}')
-    print('This may be expected if INTERNAL_IP is not local to the container.')
-" || true
 
 # === ACESTREAM ENGINE STARTUP ===
 echo "=== STARTING ACESTREAM ENGINE ==="
@@ -118,6 +71,6 @@ if [ ! -x "/opt/acestream/start-engine" ]; then
     exit 1
 fi
 
-# exec so the engine becomes PID 1: Docker's SIGTERM reaches it directly,
-# allowing a graceful shutdown instead of a SIGKILL after the stop timeout.
+# exec so no extra shell sits between tini (PID 1) and the engine; tini -g
+# delivers docker stop's SIGTERM to the whole process group.
 exec /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"

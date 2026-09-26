@@ -1,5 +1,7 @@
 @echo off
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
+:: Run from the script's folder: an elevated (UAC) launch starts in System32.
+cd /d "%~dp0"
 
 :: =============================================================
 :: Acestream x Docker - Unified setup script (English + Spanish)
@@ -250,7 +252,6 @@ echo !MSG_COMPOSE_UPDATING!
     echo     ports:
     echo       - !PORT!:!PORT!
     echo     environment:
-    echo       - INTERNAL_IP=!INTERNAL_IP!
     echo       - HTTP_PORT=!HTTP_PORT!
     echo       - HTTPS_PORT=!HTTPS_PORT!
     echo.
@@ -272,7 +273,6 @@ echo !MSG_COMPOSE_UPDATING!
     echo     ports:
     echo       - !PORT!:!PORT!
     echo     environment:
-    echo       - INTERNAL_IP=!INTERNAL_IP!
     echo       - HTTP_PORT=!HTTP_PORT!
     echo       - HTTPS_PORT=!HTTPS_PORT!
     echo       - ACESTREAM_EXTRA_FLAGS=--live-cache-type memory

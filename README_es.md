@@ -36,7 +36,7 @@ Ejecuta Acestream dentro de un contenedor Docker sobre Ubuntu 22.04 + Python 3.1
 
 ```bash
 docker build --no-cache -t acestream-engine .
-docker run --name acestream-engine -d -p 6878:6878 -e INTERNAL_IP=127.0.0.1 --restart unless-stopped acestream-engine
+docker run --name acestream-engine -d -p 6878:6878 --restart unless-stopped acestream-engine
 ```
 
 O usa Docker Compose:
@@ -67,7 +67,7 @@ Consulta [`.env.example`](.env.example) para todas las variables de entorno.
 docker inspect --format='{{json .State.Health}}' acestream-engine
 ```
 
-O vía web: `http://<INTERNAL_IP>:<PORT>/webui/api/service?method=get_version`
+O vía web: `http://<HOST>:<PORT>/webui/api/service?method=get_version`
 
 ## Licencia
 
