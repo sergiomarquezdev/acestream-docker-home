@@ -1,6 +1,10 @@
 # Git
 .git
 .gitignore
+.gitattributes
+
+# CI / repo metadata not needed inside the image
+.github/
 
 # IDE and editor files
 .idea
@@ -11,6 +15,7 @@
 # Documentation
 *.md
 LICENSE
+docs/
 
 # Tests
 tests/
@@ -18,8 +23,16 @@ tests/
 # Windows setup scripts (not needed in image)
 *.bat
 
-# Claude plans
+# Claude plans / ephemeral workspace
 .claude/
+.tmp/
+
+# Compose / env files (not part of the build; consumed by `docker compose` on
+# the host, never COPYed into the image)
+docker-compose.yml
+acestream-compose.yml
+.env
+.env.example
 
 # Preserve acestream binary
 !resources/acestream.tar.gz

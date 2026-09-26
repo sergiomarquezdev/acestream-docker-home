@@ -4,353 +4,33 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+        Locked down for an offline/LAN deployment: everything the page needs
+        (video.js, its Spanish language pack, styles and app code) is vendored
+        under /webui/, so default-src 'self' is enough. media-src/worker-src
+        need blob: because the bundled HLS tech (VHS) demuxes segments into a
+        MediaSource via blob: URLs and a Worker created from a Blob.
+    -->
+    <!-- CSP: scripts only from this origin. style-src allows inline styles because
+         video.js sets them at runtime (dimensions, control state). -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
     <title>Ace Link Player</title>
     <!-- Inline SVG favicon: self-contained, no external request -->
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230077b6'/%3E%3Cpath d='M12 9l12 7-12 7z' fill='%23fff'/%3E%3C/svg%3E" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link href="https://cdn.jsdelivr.net/npm/video.js@8.23.7/dist/video-js.css" rel="stylesheet"
-        integrity="sha384-FTL3/NcK7fyX2Wjq1fJtFmQq0ZrBsTOYLSLybPXwARdpRxVO44w30lMGxfg/9lpp" crossorigin="anonymous" />
-    <style>
-        :root {
-            --primary-color: #0077b6;
-            --primary-hover-color: #005f8e;
-            --accent-bright: #00aaff;
-            --background-color: #121212;
-            --surface-color: #1e1e1e;
-            --text-color: #ffffff;
-            --text-muted-color: #b9b9b9;
-            --border-radius: 8px;
-            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Ubuntu', 'Arial', sans-serif;
-        }
-
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--background-color);
-            font-family: var(--font-family);
-            color: var(--text-color);
-        }
-
-        /* Visually-hidden label, still read by screen readers */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            clip-path: inset(50%);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        /* Shared visible focus ring for every interactive element */
-        a:focus-visible,
-        button:focus-visible,
-        input:focus-visible {
-            outline: 2px solid var(--accent-bright);
-            outline-offset: 2px;
-        }
-
-        #player-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .video-js {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        .vjs-big-play-button {
-            border-radius: 50%;
-            background-color: rgba(43, 51, 63, 0.7) !important;
-            border: none;
-            height: 2em !important;
-            width: 2em !important;
-            margin-top: -1em !important;
-            margin-left: -1em !important;
-        }
-
-        #input-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            z-index: 100;
-            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        #input-panel.hidden {
-            transform: translateY(-150%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #input-box {
-            background-color: var(--surface-color);
-            padding: 25px 30px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            width: 90%;
-            max-width: 600px;
-        }
-
-        #welcome {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        #title-text {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        #subtitle-text {
-            margin: 0;
-            font-size: 14px;
-            line-height: 1.45;
-            color: var(--text-muted-color);
-        }
-
-        #error-message {
-            color: #ffd5d5;
-            background-color: rgba(255, 68, 68, 0.18);
-            border: 1px solid rgba(255, 102, 102, 0.5);
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
-        }
-
-        #input-form {
-            display: flex;
-            gap: 10px;
-        }
-
-        #acestream-link-input {
-            flex-grow: 1;
-            min-width: 0;
-            padding: 12px 15px;
-            border: 1px solid #3a3a3a;
-            border-radius: var(--border-radius);
-            background-color: #2a2a2a;
-            color: var(--text-color);
-            font-size: 16px;
-        }
-
-        #acestream-link-input::placeholder {
-            color: var(--text-muted-color);
-        }
-
-        #acestream-link-input:focus {
-            border-color: var(--accent-bright);
-        }
-
-        #play-button {
-            background-color: var(--primary-color);
-            color: #ffffff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            white-space: nowrap;
-            transition: background-color 0.3s ease;
-        }
-
-        #play-button:hover {
-            background-color: var(--primary-hover-color);
-        }
-
-        #help-text {
-            margin: 0;
-            font-size: 12.5px;
-            line-height: 1.5;
-            color: var(--text-muted-color);
-        }
-
-        #help-text code {
-            font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
-            background: #2a2a2a;
-            padding: 1px 5px;
-            border-radius: 4px;
-            color: #d6d6d6;
-        }
-
-        #lang-controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .lang-button {
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out;
-            opacity: 0.7;
-            /* 44px minimum touch target (WCAG 2.5.5) */
-            min-width: 44px;
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: var(--border-radius);
-        }
-
-        .lang-button:hover,
-        .lang-button.active {
-            transform: scale(1.1);
-            opacity: 1;
-        }
-
-        .lang-button svg {
-            height: 20px;
-            width: auto;
-            display: block;
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        #toggle-panel-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 101;
-            cursor: pointer;
-            background: rgba(30, 30, 30, 0.8);
-            border: none;
-            padding: 12px;
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s;
-            color: var(--text-color);
-            line-height: 0;
-        }
-
-        #toggle-panel-btn:hover {
-            background: var(--surface-color);
-        }
-
-        #toggle-panel-btn svg {
-            display: block;
-        }
-
-        /* Loading overlay shown while the stream connects/buffers */
-        #loading-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 90;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            background: rgba(18, 18, 18, 0.55);
-            pointer-events: none;
-        }
-
-        #loading-overlay.visible {
-            display: flex;
-        }
-
-        #loading-overlay .spinner {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top-color: var(--accent-bright);
-            animation: spin 0.9s linear infinite;
-        }
-
-        #loading-overlay .loading-text {
-            font-size: 14px;
-            color: var(--text-color);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            #loading-overlay .spinner {
-                animation: none;
-                border-top-color: var(--accent-bright);
-            }
-        }
-
-        #attribution {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            z-index: 50;
-            opacity: 0.4;
-            transition: opacity 0.3s ease;
-        }
-
-        #attribution:hover {
-            opacity: 1;
-        }
-
-        #attribution img {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: block;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        #attribution:hover img {
-            border-color: var(--accent-bright);
-        }
-
-        /* Narrow viewports: stack the form so the Play button is reachable */
-        @media (max-width: 480px) {
-            #input-box {
-                padding: 18px 16px;
-            }
-
-            #input-form {
-                flex-direction: column;
-            }
-
-            #play-button {
-                padding: 14px 25px;
-            }
-        }
-    </style>
+    <!-- Vendored locally (video.js 8.24.1, verified against the npm registry
+         shasum/integrity) so the player also works on an offline LAN. -->
+    <link href="/webui/vendor/videojs/video-js.css" rel="stylesheet"
+        integrity="sha384-dpbcCWfATZaCWE7JVFqi6oCsj7ub0Jrb6MSSYcJLafFDdYY0Sz1gLhY+dayi0ZEm" />
+    <link href="/webui/html/player.css" rel="stylesheet" />
 </head>
 
 <body>
     <div id="player-container">
         <button id="toggle-panel-btn" type="button" aria-label="Hide panel" aria-expanded="true">
             <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-                viewBox="0 0 16 16" aria-hidden="true" style="display: none;">
+                viewBox="0 0 16 16" aria-hidden="true">
                 <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0" />
                 <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7" />
             </svg>
@@ -363,16 +43,21 @@
             </svg>
         </button>
 
-        <video id="video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{"fluid": true}'>
+        <video id="video" class="video-js vjs-default-skin" controls preload="auto">
             <p class="vjs-no-js">
                 To view this video please enable JavaScript, and consider upgrading to a web browser that
-                <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+                <a href="https://videojs.com/html5-video-support/" target="_blank" rel="noopener noreferrer">supports
+                    HTML5 video</a>
             </p>
         </video>
 
         <div id="loading-overlay" aria-live="polite">
             <div class="spinner" aria-hidden="true"></div>
             <div class="loading-text" id="loading-text">Connecting to the stream...</div>
+        </div>
+
+        <div id="press-play-hint" aria-live="polite">
+            <div class="hint-bubble" id="press-play-text"></div>
         </div>
 
         <div id="input-panel">
@@ -395,7 +80,8 @@
                         the channel list or community where you found the stream.</span>
                 </p>
                 <div id="lang-controls">
-                    <button class="lang-button active" type="button" data-lang="en" aria-label="English">
+                    <button class="lang-button active" type="button" data-lang="en" aria-label="English"
+                        aria-pressed="true">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" aria-hidden="true">
                             <clipPath id="t-uk">
                                 <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
@@ -408,7 +94,8 @@
                             <path d="M30,0 v30 M0,15 h60" stroke="#cf142b" stroke-width="6" />
                         </svg>
                     </button>
-                    <button class="lang-button" type="button" data-lang="es" aria-label="Español">
+                    <button class="lang-button" type="button" data-lang="es" aria-label="Español"
+                        aria-pressed="false">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 500" aria-hidden="true">
                             <rect width="750" height="500" fill="#c60b1e" />
                             <rect width="750" height="250" y="125" fill="#ffc400" />
@@ -419,266 +106,22 @@
         </div>
 
         <div id="attribution">
-            <a href="https://github.com/sergiomarquezdev/acestream-docker-home" target="_blank" rel="noopener"
-                title="@sergiomarquezdev">
-                <img src="https://github.com/sergiomarquezdev.png?size=44" alt="sergiomarquezdev" loading="lazy"
-                    referrerpolicy="no-referrer" />
+            <a id="attribution-link" href="https://github.com/sergiomarquezdev/acestream-docker-home" target="_blank"
+                rel="noopener noreferrer">
+                <!-- Inline GitHub mark: no external image request -->
+                <svg viewBox="0 0 16 16" width="22" height="22" aria-hidden="true" focusable="false">
+                    <path fill="currentColor"
+                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.02 1.93-.02 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+                </svg>
             </a>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/video.js@8.23.7/dist/video.min.js"
-        integrity="sha384-qqQiJvpyqVCsvTNtB1woQmZv8dGZ6mUnti5aVYWaVq/5QdLpIoOQHLs4TWvZi5X/"
-        crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const app = {
-                // --- CONFIGURATION ---
-                // Same-origin path: the engine serves this page, so it works for any host, IP or port.
-                BASE_STREAM_URL: '/ace/manifest.m3u8?transcode_audio=1&id=',
-                ACESTREAM_PREFIX: "acestream://",
-                DEFAULT_LANG: 'en',
-
-                // --- STATE ---
-                state: {
-                    currentLang: null,
-                    lastErrorType: null,
-                    panelVisible: true,
-                    awaitingFirstPlay: false,
-                    failureHandled: false,
-                },
-                t: null,
-                loadTimer: null,
-
-                // --- DOM ELEMENTS ---
-                elements: {
-                    player: null,
-                    inputPanel: document.getElementById('input-panel'),
-                    toggleBtn: document.getElementById('toggle-panel-btn'),
-                    eyeIcon: document.getElementById('eye-icon'),
-                    eyeSlashIcon: document.getElementById('eye-slash-icon'),
-                    playBtn: document.getElementById('play-button'),
-                    linkInput: document.getElementById('acestream-link-input'),
-                    inputLabel: document.getElementById('input-label'),
-                    langControls: document.getElementById('lang-controls'),
-                    inputForm: document.getElementById('input-form'),
-                    errorMessage: document.getElementById('error-message'),
-                    loadingOverlay: document.getElementById('loading-overlay'),
-                    loadingText: document.getElementById('loading-text'),
-                    titleText: document.getElementById('title-text'),
-                    subtitleText: document.getElementById('subtitle-text'),
-                    helpLabel: document.getElementById('help-label'),
-                    helpBody: document.getElementById('help-body'),
-                },
-
-                // --- TRANSLATIONS ---
-                translations: {
-                    en: {
-                        lang: 'en',
-                        title: 'Ace Stream Player',
-                        subtitle: 'Paste an Ace Stream link or content ID below and press Play.',
-                        placeholder: 'acestream://... or 40-character ID',
-                        play: 'Play',
-                        inputLabel: 'Ace Stream link or content ID',
-                        helpLabel: 'Where do I get a link?',
-                        helpBody: 'A link looks like <code>acestream://&lt;40 characters&gt;</code> and comes from the channel list or community where you found the stream.',
-                        loading: 'Connecting to the stream... this can take 10-30 seconds.',
-                        noPeers: 'No peers found for this stream. It may be offline right now, or your network may be blocking Ace Stream. Try another link or try again later.',
-                        showPanel: 'Show panel',
-                        hidePanel: 'Hide panel',
-                        playbackFailed: 'Could not load the stream. The link may be offline or wrong. Try another one.',
-                        invalidFormat: 'That is not a valid Ace Stream link. It should be acestream:// followed by 40 characters (letters a-f and numbers).'
-                    },
-                    es: {
-                        lang: 'es',
-                        title: 'Reproductor Ace Stream',
-                        subtitle: 'Pega abajo un enlace Ace Stream o un ID de contenido y pulsa Reproducir.',
-                        placeholder: 'acestream://... o ID de 40 caracteres',
-                        play: 'Reproducir',
-                        inputLabel: 'Enlace Ace Stream o ID de contenido',
-                        helpLabel: '¿De dónde saco un enlace?',
-                        helpBody: 'Un enlace tiene la forma <code>acestream://&lt;40 caracteres&gt;</code> y lo obtienes de la lista de canales o la comunidad donde encontraste el stream.',
-                        loading: 'Conectando con el stream... puede tardar entre 10 y 30 segundos.',
-                        noPeers: 'No se encontraron peers para este stream. Puede estar caído ahora mismo, o tu red podría estar bloqueando Ace Stream. Prueba otro enlace o inténtalo más tarde.',
-                        showPanel: 'Mostrar panel',
-                        hidePanel: 'Ocultar panel',
-                        playbackFailed: 'No se pudo cargar el stream. El enlace puede estar caído o ser incorrecto. Prueba con otro.',
-                        invalidFormat: 'Eso no es un enlace Ace Stream válido. Debe ser acestream:// seguido de 40 caracteres (letras a-f y números).'
-                    }
-                },
-
-                // --- INITIALIZATION ---
-                init() {
-                    this.elements.player = videojs("video");
-                    this.addEventListeners();
-                    this.changeLanguage(this.DEFAULT_LANG);
-                },
-
-                // --- EVENT LISTENERS ---
-                addEventListeners() {
-                    this.elements.toggleBtn.addEventListener('click', () => this.togglePanel());
-                    this.elements.inputForm.addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        this.loadAceStream(this.elements.linkInput.value.trim());
-                    });
-                    this.elements.langControls.querySelectorAll('.lang-button').forEach(btn => {
-                        btn.addEventListener('click', () => this.changeLanguage(btn.dataset.lang));
-                    });
-                    // Drive UI from real playback events instead of guessing.
-                    this.elements.player.on('playing', () => {
-                        this.clearLoadTimer();
-                        this.hideLoading();
-                        // Auto-hide the panel only on the first successful play after a
-                        // load, not on every buffer-resume 'playing' event.
-                        if (this.state.awaitingFirstPlay) {
-                            this.state.awaitingFirstPlay = false;
-                            this.togglePanel(false);
-                        }
-                    });
-                    this.elements.player.on('error', () => this.handleFailure());
-                },
-
-                // --- CORE LOGIC ---
-                loadAceStream(link) {
-                    this.hideError();
-
-                    if (!link)
-                        return;
-
-                    const playerId = link.replace(this.ACESTREAM_PREFIX, '').toLowerCase();
-                    const isValidHash = /^[a-f0-9]{40}$/.test(playerId);
-
-                    if (!isValidHash) {
-                        this.showError('invalidFormat');
-                        return;
-                    }
-
-                    this.elements.linkInput.value = link;
-                    document.title = `Ace Link [${playerId.substr(0, 7)}]`;
-
-                    this.state.awaitingFirstPlay = true;
-                    this.state.failureHandled = false;
-                    this.showLoading();
-                    this.startLoadTimer();
-
-                    this.elements.player.src({
-                        src: this.BASE_STREAM_URL + playerId,
-                        type: 'application/x-mpegURL',
-                    });
-
-                    const playPromise = this.elements.player.play();
-
-                    if (playPromise !== undefined) {
-                        playPromise.catch((error) => {
-                            // A user-gesture submit should allow playback; a rejection here is a real failure.
-                            console.error('Video playback error:', error);
-                            this.handleFailure();
-                        });
-                    }
-                },
-
-                // Single guarded failure path: the play() rejection and the video.js
-                // 'error' event can both fire for one failure, so dedupe them here.
-                handleFailure() {
-                    if (this.state.failureHandled) return;
-                    this.state.failureHandled = true;
-                    this.state.awaitingFirstPlay = false;
-                    this.clearLoadTimer();
-                    this.hideLoading();
-                    this.showError('playbackFailed');
-                    this.togglePanel(true);
-                },
-
-                // Safety net so the spinner can never get stuck: if nothing plays and
-                // no error fires (e.g. peers never found), surface a clear message.
-                startLoadTimer() {
-                    this.clearLoadTimer();
-                    this.loadTimer = setTimeout(() => {
-                        if (this.state.failureHandled) return;
-                        this.state.failureHandled = true;
-                        this.state.awaitingFirstPlay = false;
-                        this.hideLoading();
-                        this.showError('noPeers');
-                        this.togglePanel(true);
-                    }, 45000);
-                },
-
-                clearLoadTimer() {
-                    if (this.loadTimer) {
-                        clearTimeout(this.loadTimer);
-                        this.loadTimer = null;
-                    }
-                },
-
-                showLoading() {
-                    this.elements.loadingOverlay.classList.add('visible');
-                },
-
-                hideLoading() {
-                    this.elements.loadingOverlay.classList.remove('visible');
-                },
-
-                togglePanel(forceState) {
-                    const show = forceState === true || (forceState === undefined && !this.state.panelVisible);
-                    this.state.panelVisible = show;
-
-                    this.elements.inputPanel.classList.toggle('hidden', !show);
-                    this.elements.eyeIcon.style.display = show ? 'none' : 'block';
-                    this.elements.eyeSlashIcon.style.display = show ? 'block' : 'none';
-
-                    const label = show ? this.t.hidePanel : this.t.showPanel;
-                    this.elements.toggleBtn.setAttribute('aria-label', label);
-                    this.elements.toggleBtn.setAttribute('aria-expanded', String(show));
-                },
-
-                showError(errorType) {
-                    this.state.lastErrorType = errorType;
-                    this.elements.errorMessage.innerText = this.t[errorType];
-                    this.elements.errorMessage.style.display = 'block';
-                },
-
-                hideError() {
-                    this.state.lastErrorType = null;
-                    this.elements.errorMessage.style.display = 'none';
-                    this.elements.errorMessage.innerText = '';
-                },
-
-                changeLanguage(lang) {
-                    const t = this.translations[lang] || this.translations.en;
-                    this.t = t;
-                    this.state.currentLang = t.lang;
-
-                    document.documentElement.lang = t.lang;
-                    this.elements.titleText.innerText = t.title;
-                    this.elements.subtitleText.innerText = t.subtitle;
-                    this.elements.linkInput.placeholder = t.placeholder;
-                    this.elements.inputLabel.innerText = t.inputLabel;
-                    this.elements.playBtn.innerText = t.play;
-                    this.elements.helpLabel.innerText = t.helpLabel;
-                    this.elements.helpBody.innerHTML = t.helpBody;
-                    this.elements.loadingText.innerText = t.loading;
-
-                    // Re-render a visible error in the new language.
-                    if (this.state.lastErrorType) {
-                        this.elements.errorMessage.innerText = t[this.state.lastErrorType];
-                    }
-
-                    // Keep the toggle button's accessible name in sync.
-                    const label = this.state.panelVisible ? t.hidePanel : t.showPanel;
-                    this.elements.toggleBtn.setAttribute('aria-label', label);
-
-                    // Highlight the active language button.
-                    this.elements.langControls.querySelectorAll('.lang-button').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.lang === lang);
-                    });
-                }
-            };
-
-            // Expose for debugging/console use.
-            window.app = app;
-            app.init();
-        });
-    </script>
+    <script src="/webui/vendor/videojs/video.min.js"
+        integrity="sha384-9LtdENn4aCK5YUSBEw9zQT/tT1eCah4K4BlWimkvqqCaURKD4rBN00ZHMe26ny2O"></script>
+    <script src="/webui/vendor/videojs/lang/es.js"
+        integrity="sha384-ViN9R5ud+/LHMucsPJ9unPOj2wfc2yh9wJsuHQYptkx9iiM4hmLo1CZVJSbPcEvj"></script>
+    <script src="/webui/html/player.js"></script>
 </body>
 
 </html>

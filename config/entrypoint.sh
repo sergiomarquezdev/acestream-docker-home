@@ -19,7 +19,7 @@ validate_port() {
         echo "ERROR: $name '$port' is not a number"
         return 1
     fi
-    if [[ 10#$port -lt 1024 || 10#$port -gt 65535 ]]; then
+    if (( 10#$port < 1024 || 10#$port > 65535 )); then
         echo "ERROR: $name '$port' must be between 1024 and 65535"
         return 1
     fi
@@ -30,7 +30,7 @@ validate_https_port() {
     local http="$1"
     local https="$2"
     local expected=$((10#$http + 1))
-    if [[ 10#$https -ne $expected ]]; then
+    if (( 10#$https != expected )); then
         echo "ERROR: HTTPS_PORT ($https) must be HTTP_PORT ($http) + 1 (expected $expected)"
         return 1
     fi
@@ -73,4 +73,8 @@ fi
 
 # exec so no extra shell sits between tini (PID 1) and the engine; tini -g
 # delivers docker stop's SIGTERM to the whole process group.
-exec /opt/acestream/start-engine --http-port ${HTTP_PORT} --https-port ${HTTPS_PORT} ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"
+# ACESTREAM_EXTRA_FLAGS is intentionally left unquoted: it may carry several
+# space-separated flags (e.g. "--live-cache-type memory") that must be word-split
+# into separate arguments.
+# shellcheck disable=SC2086
+exec /opt/acestream/start-engine --http-port "${HTTP_PORT}" --https-port "${HTTPS_PORT}" ${ACESTREAM_EXTRA_FLAGS} "@/opt/acestream/acestream.conf"

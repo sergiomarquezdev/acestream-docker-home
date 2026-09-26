@@ -1,0 +1,378 @@
+:root {
+    --primary-color: #0077b6;
+    --primary-hover-color: #005f8e;
+    --accent-bright: #00aaff;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #ffffff;
+    --text-muted-color: #b9b9b9;
+    --error-color: #ff6666;
+    --border-radius: 8px;
+    --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Ubuntu', 'Arial', sans-serif;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--background-color);
+    font-family: var(--font-family);
+    color: var(--text-color);
+}
+
+/* Visually-hidden label, still read by screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Shared visible focus ring for every interactive element */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent-bright);
+    outline-offset: 2px;
+}
+
+#player-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.video-js {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.vjs-big-play-button {
+    border-radius: 50%;
+    background-color: rgba(43, 51, 63, 0.7) !important;
+    border: none;
+    height: 2em !important;
+    width: 2em !important;
+    margin-top: -1em !important;
+    margin-left: -1em !important;
+}
+
+#input-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+#input-panel.hidden {
+    transform: translateY(-150%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#input-box {
+    background-color: var(--surface-color);
+    padding: 25px 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 90%;
+    max-width: 600px;
+}
+
+#welcome {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#title-text {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+#subtitle-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-muted-color);
+}
+
+#error-message {
+    color: #ffd5d5;
+    background-color: rgba(255, 68, 68, 0.18);
+    border: 1px solid rgba(255, 102, 102, 0.5);
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    display: none;
+}
+
+#input-form {
+    display: flex;
+    gap: 10px;
+}
+
+#acestream-link-input {
+    flex-grow: 1;
+    min-width: 0;
+    padding: 12px 15px;
+    border: 1px solid #3a3a3a;
+    border-radius: var(--border-radius);
+    background-color: #2a2a2a;
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+#acestream-link-input::placeholder {
+    color: var(--text-muted-color);
+}
+
+#acestream-link-input:focus {
+    border-color: var(--accent-bright);
+}
+
+#acestream-link-input[aria-invalid="true"] {
+    border-color: var(--error-color);
+}
+
+#play-button {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color 0.3s ease;
+}
+
+#play-button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+#help-text {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-muted-color);
+}
+
+#help-text code {
+    font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+    background: #2a2a2a;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #d6d6d6;
+}
+
+#lang-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.lang-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    opacity: 0.7;
+    /* 44px minimum touch target (WCAG 2.5.5) */
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+}
+
+.lang-button:hover,
+.lang-button.active {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.lang-button svg {
+    height: 20px;
+    width: auto;
+    display: block;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#toggle-panel-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 101;
+    cursor: pointer;
+    background: rgba(30, 30, 30, 0.8);
+    border: none;
+    padding: 12px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s;
+    color: var(--text-color);
+    line-height: 0;
+}
+
+#toggle-panel-btn:hover {
+    background: var(--surface-color);
+}
+
+#toggle-panel-btn svg {
+    display: block;
+}
+
+/* Icon visibility follows the button's own state, no inline styles */
+#toggle-panel-btn #eye-icon {
+    display: none;
+}
+
+#toggle-panel-btn.panel-hidden #eye-icon {
+    display: block;
+}
+
+#toggle-panel-btn.panel-hidden #eye-slash-icon {
+    display: none;
+}
+
+/* Loading overlay shown while the stream connects/buffers */
+#loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(18, 18, 18, 0.55);
+    pointer-events: none;
+}
+
+#loading-overlay.visible {
+    display: flex;
+}
+
+#loading-overlay .spinner {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--accent-bright);
+    animation: spin 0.9s linear infinite;
+}
+
+#loading-overlay .loading-text {
+    font-size: 14px;
+    color: var(--text-color);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #loading-overlay .spinner {
+        animation: none;
+        border-top-color: var(--accent-bright);
+    }
+}
+
+/* Non-alarming hint shown when autoplay was blocked by the browser: the
+   stream is ready, the user just needs to press the (visible) big play
+   button. This is not an error state. */
+#press-play-hint {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    display: none;
+    justify-content: center;
+    pointer-events: none;
+}
+
+#press-play-hint.visible {
+    display: flex;
+}
+
+#press-play-hint .hint-bubble {
+    background: rgba(30, 30, 30, 0.85);
+    color: var(--text-color);
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+#attribution {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 50;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+
+#attribution:hover {
+    opacity: 1;
+}
+
+#attribution svg {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: block;
+    background: #24292f;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#attribution:hover svg {
+    border-color: var(--accent-bright);
+}
+
+/* Narrow viewports: stack the form so the Play button is reachable */
+@media (max-width: 480px) {
+    #input-box {
+        padding: 18px 16px;
+    }
+
+    #input-form {
+        flex-direction: column;
+    }
+
+    #play-button {
+        padding: 14px 25px;
+    }
+}
