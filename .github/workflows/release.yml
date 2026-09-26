@@ -28,7 +28,7 @@ jobs:
 
       - name: Set up Docker Buildx
         if: steps.check.outputs.configured == 'true'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to Docker Hub
         if: steps.check.outputs.configured == 'true'
