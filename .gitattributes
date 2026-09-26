@@ -15,3 +15,6 @@
 *.tar binary
 *.zip binary
 *.ico binary
+
+# Vendored third-party assets: byte-exact (their SRI hashes break on EOL conversion)
+web/vendor/** -text
