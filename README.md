@@ -8,7 +8,11 @@
 
 Run the Acestream Engine 3.2.11 inside Docker and watch streams from your browser. On Windows, one script does everything: it starts Docker, pulls the image, runs the engine and opens the web player.
 
-## What's new in v8.3.1
+## What's new in v8.3.2
+
+- **Player on phones**: the show/hide button no longer covers the panel, the big play button stays clear of it, and every control has a 44 px touch target.
+
+### v8.3.1
 
 - **Setup script keeps port 6878**: it no longer moves to 6880 right after the player was used (recent client connections were mistaken for a busy port); only a real listener counts. The farewell message shows its "!" again.
 

@@ -337,8 +337,8 @@ input:focus-visible {
 
 #attribution {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 0;
+    right: 0;
     z-index: 50;
     opacity: 0.4;
     transition: opacity 0.3s ease;
@@ -346,6 +346,15 @@ input:focus-visible {
 
 #attribution:hover {
     opacity: 1;
+}
+
+/* 44x44 touch target around the 22px icon */
+#attribution-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 #attribution svg {
@@ -364,6 +373,16 @@ input:focus-visible {
 
 /* Narrow viewports: stack the form so the Play button is reachable */
 @media (max-width: 480px) {
+    /* Start the panel below the show/hide toggle instead of under it */
+    #input-panel {
+        padding-top: 76px;
+    }
+
+    /* Keep the big play button clear of the panel (needed when autoplay is blocked) */
+    .video-js .vjs-big-play-button {
+        top: 78% !important;
+    }
+
     #input-box {
         padding: 18px 16px;
     }

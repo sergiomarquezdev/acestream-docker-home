@@ -8,7 +8,11 @@
 
 Ejecuta Acestream Engine 3.2.11 dentro de Docker y mira streams desde el navegador. En Windows, un solo script lo hace todo: arranca Docker, descarga la imagen, lanza el motor y abre el reproductor web.
 
-## Novedades de v8.3.1
+## Novedades de v8.3.2
+
+- **Reproductor en móviles**: el botón de mostrar/ocultar ya no tapa el panel, el botón grande de reproducción queda libre y todos los controles tienen un área táctil de 44 px.
+
+### v8.3.1
 
 - **El script de instalación mantiene el puerto 6878**: ya no salta al 6880 justo después de usar el reproductor (confundía conexiones recientes con un puerto ocupado); solo cuenta un proceso que escuche de verdad. El mensaje de despedida vuelve a mostrar su "!".
 
